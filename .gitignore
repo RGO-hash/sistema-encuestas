@@ -1,0 +1,59 @@
+# Entorno Virtual
+venv/
+env/
+ENV/
+
+# Variables de Entorno
+.env
+.env.local
+.env.*.local
+
+# Base de Datos
+*.db
+*.sqlite
+*.sqlite3
+
+# Caché Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# IDE y Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Archivos Temporales
+*.tmp
+*.bak
+*~
+
+# Dependencias
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node (si se usa frontend con Node)
+node_modules/
+package-lock.json
+yarn.lock
+
+# OS
+.DS_Store
+Thumbs.db

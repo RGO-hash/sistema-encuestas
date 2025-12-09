@@ -1,0 +1,56 @@
+<!-- Modal: Agregar/Editar Participante -->
+<div class="modal fade" id="addParticipantModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus me-2 text-primary"></i>Nuevo Participante
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <form id="participant-form">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <small class="text-muted">Debe ser único en el sistema</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="first_name" class="form-label">Nombre <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="last_name" class="form-label">Apellido <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="field1" class="form-label">Campo Adicional 1</label>
+                        <input type="text" class="form-control" id="field1" name="field1" placeholder="Ej: Departamento">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="field2" class="form-label">Campo Adicional 2</label>
+                        <input type="text" class="form-control" id="field2" name="field2" placeholder="Ej: Puesto">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="field3" class="form-label">Campo Adicional 3</label>
+                        <input type="text" class="form-control" id="field3" name="field3" placeholder="Ej: Ubicación">
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

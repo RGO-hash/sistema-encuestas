@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sistema de Encuestas{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Encabezado -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="mb-1">
+                        <i class="fas fa-tachometer-alt text-primary me-2"></i>Panel de Control
+                    </h1>
+                    <p class="text-muted">Gestiona participantes, posiciones y candidatos</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addParticipantModal">
+                        <i class="fas fa-user-plus me-2"></i>Nuevo Participante
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tarjetas de estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Total de Participantes</p>
+                            <h2 class="mb-0" id="total-participants">0</h2>
+                        </div>
+                        <div class="stat-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
+                            <i class="fas fa-users fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Han Votado</p>
+                            <h2 class="mb-0" id="voted-participants">0</h2>
+                        </div>
+                        <div class="stat-icon bg-success text-white rounded-circle d-flex align-items-center justify-content-center">
+                            <i class="fas fa-check-circle fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Pendientes</p>
+                            <h2 class="mb-0" id="pending-participants">0</h2>
+                        </div>
+                        <div class="stat-icon bg-warning text-white rounded-circle d-flex align-items-center justify-content-center">
+                            <i class="fas fa-hourglass-half fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm h-100 stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted small mb-1">Tasa Participación</p>
+                            <h2 class="mb-0" id="participation-rate">0%</h2>
+                        </div>
+                        <div class="stat-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center">
+                            <i class="fas fa-percentage fa-lg"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pestañas -->
+    <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="participants-tab" data-bs-toggle="tab" data-bs-target="#participants-pane" type="button" role="tab">
+                <i class="fas fa-users me-2"></i>Participantes
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="positions-tab" data-bs-toggle="tab" data-bs-target="#positions-pane" type="button" role="tab">
+                <i class="fas fa-list me-2"></i>Posiciones
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="candidates-tab" data-bs-toggle="tab" data-bs-target="#candidates-pane" type="button" role="tab">
+                <i class="fas fa-user-tie me-2"></i>Candidatos
+            </button>
+        </li>
+    </ul>
+    
+    <div class="tab-content">
+        <!-- Pestaña Participantes -->
+        <div class="tab-pane fade show active" id="participants-pane" role="tabpanel">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-bottom">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="participants-search" placeholder="Buscar por email, nombre...">
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#bulkUploadModal">
+                                <i class="fas fa-upload me-1"></i>Cargar CSV
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" id="send-invitations-btn">
+                                <i class="fas fa-envelope me-1"></i>Enviar Invitaciones
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="participants-list" style="max-height: 500px; overflow-y: auto;">
+                        <!-- Será llenado por JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pestaña Posiciones -->
+        <div class="tab-pane fade" id="positions-pane" role="tabpanel">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Cargos/Posiciones</h5>
+                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addPositionModal">
+                        <i class="fas fa-plus me-1"></i>Nueva Posición
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="positions-list">
+                        <!-- Será llenado por JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Pestaña Candidatos -->
+        <div class="tab-pane fade" id="candidates-pane" role="tabpanel">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-bottom">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <select class="form-select" id="position-filter">
+                                <option value="">Selecciona una posición...</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addCandidateModal">
+                                <i class="fas fa-plus me-1"></i>Nuevo Candidato
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="candidates-list">
+                        <!-- Será llenado por JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modales -->
+{% include 'modals/participant_modal.html' %}
+{% include 'modals/position_modal.html' %}
+{% include 'modals/candidate_modal.html' %}
+{% include 'modals/bulk_upload_modal.html' %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

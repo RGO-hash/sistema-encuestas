@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Encuesta de Votación{% endblock %}
+
+{% block extra_css %}
+<style>
+    .survey-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        padding: 20px 0;
+    }
+    
+    .survey-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+    }
+    
+    .position-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 15px 15px 0 0;
+        margin-bottom: 0;
+    }
+    
+    .vote-option {
+        padding: 15px;
+        margin: 10px 0;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .vote-option:hover {
+        border-color: #667eea;
+        background-color: #f8f9ff;
+    }
+    
+    .vote-option.selected {
+        border-color: #667eea;
+        background-color: #f0f4ff;
+    }
+    
+    .vote-option input[type="radio"] {
+        margin-right: 15px;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+    
+    .candidate-name {
+        font-weight: 600;
+        color: #2d3748;
+    }
+    
+    .candidate-description {
+        font-size: 0.9rem;
+        color: #718096;
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="survey-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Encabezado -->
+                <div class="text-center text-white mb-5">
+                    <h1 class="display-4 fw-bold mb-2">
+                        <i class="fas fa-poll-h me-2"></i>Encuesta de Votación
+                    </h1>
+                    <p class="lead">Tu voto es importante. Por favor, participa en esta encuesta.</p>
+                </div>
+                
+                <!-- Información del participante -->
+                <div class="alert alert-info text-center" role="alert">
+                    <i class="fas fa-user-circle me-2"></i>
+                    Participante: <strong id="participant-info">Cargando...</strong>
+                </div>
+                
+                <!-- Formulario de encuesta -->
+                <form id="survey-form">
+                    <div id="positions-container">
+                        <!-- Será llenado por JavaScript -->
+                    </div>
+                    
+                    <!-- Botones de acción -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <button type="reset" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-redo me-2"></i>Limpiar
+                        </button>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-check-circle me-2"></i>Enviar Voto
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Información de seguridad -->
+                <div class="alert alert-secondary mt-5" role="alert">
+                    <small>
+                        <i class="fas fa-lock me-2"></i>
+                        Tu voto es anónimo y seguro. No se compartirá información personal.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle me-2 text-warning"></i>Confirmar Voto
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Por favor revisa tu voto antes de enviarlo. Una vez enviado, no podrás cambiar tu voto.</p>
+                <div id="confirm-summary"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="confirm-submit-btn">
+                    <i class="fas fa-check me-1"></i>Confirmar Voto
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/survey.js') }}"></script>
+{% endblock %}

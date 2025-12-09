@@ -1,0 +1,63 @@
+<!-- Modal: Carga en lote de participantes -->
+<div class="modal fade" id="bulkUploadModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-upload me-2 text-primary"></i>Cargar Participantes desde CSV
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body">
+                <div class="alert alert-info" role="alert">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-info-circle me-2"></i>Formato del archivo CSV
+                    </h6>
+                    <p class="mb-0">El archivo debe contener las siguientes columnas (en este orden):</p>
+                    <code class="d-block mt-2">email,first_name,last_name,field1,field2,field3</code>
+                    <p class="mt-2 mb-0"><small>Los campos adicionales son opcionales.</small></p>
+                </div>
+                
+                <form id="bulk-upload-form" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="csv-file" class="form-label">Selecciona archivo CSV <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="csv-file" name="file" accept=".csv" required>
+                        <small class="text-muted d-block mt-2">
+                            <i class="fas fa-download me-1"></i>
+                            <a href="{{ url_for('static', filename='templates/participants_template.csv') }}" download>
+                                Descargar plantilla
+                            </a>
+                        </small>
+                    </div>
+                    
+                    <div id="upload-progress" style="display: none;">
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <p class="mt-2 text-center text-muted">Procesando...</p>
+                    </div>
+                    
+                    <div id="upload-results" style="display: none;">
+                        <div class="alert alert-success">
+                            <p class="mb-0"><strong>Cargados:</strong> <span id="upload-success-count">0</span></p>
+                        </div>
+                        <div id="upload-errors" style="display: none;">
+                            <div class="alert alert-warning">
+                                <p class="mb-2"><strong>Errores encontrados:</strong></p>
+                                <ul id="errors-list" class="mb-0"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" form="bulk-upload-form" class="btn btn-primary">
+                    <i class="fas fa-upload me-1"></i>Cargar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

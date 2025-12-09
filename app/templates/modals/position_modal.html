@@ -1,0 +1,49 @@
+<!-- Modal: Agregar/Editar Posición -->
+<div class="modal fade" id="addPositionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-list me-2 text-primary"></i>Nueva Posición
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <form id="position-form">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="position_name" class="form-label">Nombre de la Posición <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="position_name" name="position_name" placeholder="Ej: Presidente" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="position_description" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="position_description" name="position_description" rows="3" placeholder="Describe el cargo..."></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="position_order" class="form-label">Orden</label>
+                        <input type="number" class="form-control" id="position_order" name="position_order" value="0" min="0">
+                        <small class="text-muted">Determina el orden en la encuesta</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="position_active" name="position_active" checked>
+                            <label class="form-check-label" for="position_active">
+                                Posición activa
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
