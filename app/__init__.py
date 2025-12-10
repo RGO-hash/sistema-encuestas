@@ -46,17 +46,17 @@ def create_app(config_name=None):
     @app.route('/')
     def index():
         """Página principal - Panel de admin"""
-        return render_template('index.html')
+        return render_template('index.html', is_survey_page=False)
     
     @app.route('/survey')
     def survey_page():
         """Página de encuesta pública"""
-        return render_template('survey.html')
+        return render_template('survey.html', is_survey_page=True)
     
     @app.route('/results')
     def results_page():
         """Página de resultados"""
-        return render_template('results.html')
+        return render_template('results.html', is_survey_page=False)
     
     # Manejo de errores
     @app.errorhandler(404)
@@ -66,6 +66,7 @@ def create_app(config_name=None):
     @app.errorhandler(500)
     def internal_error(error):
         db.session.rollback()
+        app.logger.error(f'Internal error: {str(error)}', exc_info=True)
         return jsonify({'error': 'Error interno del servidor'}), 500
     
     @app.errorhandler(401)
@@ -79,6 +80,11 @@ def create_app(config_name=None):
     @app.errorhandler(422)
     def unprocessable_entity(error):
         return jsonify({'error': 'Datos inválidos o incompletos'}), 422
+    
+    # Manejar errores de JSON inválido
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify({'error': 'Solicitud inválida'}), 400
     
     # Crear tablas de base de datos
     with app.app_context():

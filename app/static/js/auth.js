@@ -79,7 +79,18 @@ class ApiClient {
                 return null;
             }
             
-            const result = await response.json();
+            // Verificar si la respuesta es JSON
+            const contentType = response.headers.get('content-type');
+            let result;
+            
+            if (contentType && contentType.includes('application/json')) {
+                result = await response.json();
+            } else {
+                // Si no es JSON, es probablemente un error del servidor (HTML)
+                const text = await response.text();
+                console.error('Server response is not JSON:', text.substring(0, 200));
+                throw new Error('Error del servidor. Por favor intenta de nuevo.');
+            }
             
             if (!response.ok) {
                 throw new Error(result.error || 'Error en la solicitud');
