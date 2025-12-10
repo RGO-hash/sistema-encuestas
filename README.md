@@ -406,8 +406,10 @@ Sugerencias de mejora:
 Este proyecto es de código abierto. Úsalo libremente.
 
 ## 👨‍💻 Autor
-
-Sistema de Encuestas Profesional - 2024
+Randy Garcia O
+100533464
+Lab. Programacion 3
+Sistema de Encuestas Profesional - 2025
 
 ---
 
