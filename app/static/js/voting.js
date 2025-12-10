@@ -76,20 +76,40 @@ function loadVotingTab() {
     const container = document.getElementById('surveysContainer');
     container.innerHTML = '<div class="col-12 text-center"><div class="spinner-border text-primary"></div><p class="mt-2">Cargando candidatos...</p></div>';
     
+    console.log('Cargando encuestas con token:', token ? 'Presente' : 'Ausente');
+    
     fetch('/api/voting/active-surveys', {
-        headers: { 'Authorization': 'Bearer ' + token }
+        headers: { 
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
     })
     .then(r => {
+        console.log('Respuesta del servidor:', r.status);
         if (r.status === 401) {
+            console.warn('Token inválido o expirado');
             clearToken();
             loadVotingTab();
             return null;
         }
+        if (r.status === 404) {
+            console.error('Endpoint no encontrado - verificar blueprint');
+            container.innerHTML = '<div class="col-12 alert alert-danger">Error de configuración del servidor. Contacte al administrador.</div>';
+            return null;
+        }
+        if (!r.ok) {
+            console.error('Error en la respuesta:', r.status);
+            throw new Error('Error del servidor: ' + r.status);
+        }
         return r.json();
     })
     .then(data => {
-        if (!data || !data.surveys || data.surveys.length === 0) {
-            container.innerHTML = '<div class="col-12 alert alert-warning">No hay encuestas disponibles</div>';
+        if (!data) return;
+        
+        console.log('Datos recibidos:', data);
+        
+        if (!data.surveys || data.surveys.length === 0) {
+            container.innerHTML = '<div class="col-12 alert alert-warning">No hay encuestas disponibles en este momento</div>';
             return;
         }
         
@@ -97,7 +117,7 @@ function loadVotingTab() {
         const survey = data.surveys[0];
         
         if (!survey.positions || survey.positions.length === 0) {
-            container.innerHTML = '<div class="col-12 alert alert-warning">No hay posiciones disponibles</div>';
+            container.innerHTML = '<div class="col-12 alert alert-warning">No hay posiciones disponibles para votar</div>';
             return;
         }
         
@@ -109,8 +129,8 @@ function loadVotingTab() {
         document.getElementById('submitVotesBtn').onclick = submitVotes;
     })
     .catch(e => {
-        console.error('Error:', e);
-        container.innerHTML = '<div class="col-12 alert alert-danger">Error al cargar candidatos</div>';
+        console.error('Error completo:', e);
+        container.innerHTML = '<div class="col-12 alert alert-danger">Error al cargar candidatos. Intente nuevamente.</div>';
     });
 }
 

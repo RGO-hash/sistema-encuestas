@@ -10,7 +10,7 @@ from app.models import ParticipantUser, Participant, Position, Candidate, Vote
 from app.services.audit_service import AuditService
 from datetime import datetime
 
-voting_participant_bp = Blueprint('voting_participant', __name__)
+voting_participant_bp = Blueprint('voting_participant', __name__, url_prefix='')
 
 @voting_participant_bp.route('/votar', methods=['GET'])
 @voting_participant_bp.route('/vote', methods=['GET'])
