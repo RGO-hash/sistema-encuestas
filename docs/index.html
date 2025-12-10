@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🗳️ Sistema de Votación Electrónica</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container-main {
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.95);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 25px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .header-section {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        .header-section h1 {
+            font-size: 3em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header-section p {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            opacity: 0.95;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feature-card {
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .feature-card i {
+            color: #667eea;
+            margin-right: 10px;
+            font-size: 1.5em;
+        }
+
+        .setup-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .setup-option {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .setup-option:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .setup-option h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .setup-option code {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            display: block;
+            margin: 10px 0;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+
+        .btn-setup {
+            margin-top: 15px;
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 10px;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading-spinner i {
+            font-size: 3em;
+            color: #667eea;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .badge-feature {
+            display: inline-block;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .demo-button {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+            padding: 15px 40px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(39, 174, 96, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .info-box i {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-main">
+        <!-- Header -->
+        <div class="header-section">
+            <h1>🗳️ Sistema de Votación Electrónica</h1>
+            <p>Plataforma completa para gestionar votaciones de forma segura y transparente</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="container">
+            <!-- Opciones Principales -->
+            <div class="row">
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-rocket fa-3x mb-3" style="color: #667eea;"></i>
+                            <h5 class="card-title">Demo Online</h5>
+                            <p class="card-text">Prueba la aplicación completamente funcional en línea</p>
+                            <button class="btn btn-primary" onclick="launchDemo()">
+                                <i class="fas fa-play"></i> Iniciar Demo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-code fa-3x mb-3" style="color: #3498db;"></i>
+                            <h5 class="card-title">Ver Código</h5>
+                            <p class="card-text">Accede al repositorio completo en GitHub</p>
+                            <a href="https://github.com/RGO-hash/sistema-encuestas" target="_blank" class="btn btn-primary">
+                                <i class="fab fa-github"></i> GitHub
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-book fa-3x mb-3" style="color: #27ae60;"></i>
+                            <h5 class="card-title">Documentación</h5>
+                            <p class="card-text">Guías de instalación y uso</p>
+                            <a href="https://github.com/RGO-hash/sistema-encuestas#readme" target="_blank" class="btn btn-primary">
+                                <i class="fas fa-file-alt"></i> Leer
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div class="info-box mb-4">
+                <i class="fas fa-info-circle"></i>
+                <strong>Nota:</strong> La demo online se conecta a un servidor backend en la nube. Si quieres ejecutar localmente, consulta la documentación de GitHub.
+            </div>
+
+            <!-- Características -->
+            <div class="card mb-4">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0"><i class="fas fa-star" style="color: #667eea;"></i> Características Principales</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <h6><i class="fas fa-lock"></i> Seguridad</h6>
+                                <p>Autenticación JWT, prevención de votos duplicados y validación completa de datos</p>
+                            </div>
+                            <div class="feature-card">
+                                <h6><i class="fas fa-chart-bar"></i> Resultados en Tiempo Real</h6>
+                                <p>Visualiza votos, porcentajes y ganadores instantáneamente</p>
+                            </div>
+                            <div class="feature-card">
+                                <h6><i class="fas fa-users"></i> Gestión de Participantes</h6>
+                                <p>Registro, autenticación y control de participantes</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <h6><i class="fas fa-cog"></i> Panel Administrativo</h6>
+                                <p>Crea encuestas, registra candidatos y gestiona votaciones</p>
+                            </div>
+                            <div class="feature-card">
+                                <h6><i class="fas fa-mobile-alt"></i> Diseño Responsivo</h6>
+                                <p>Funciona perfectamente en móviles, tablets y escritorio</p>
+                            </div>
+                            <div class="feature-card">
+                                <h6><i class="fas fa-code"></i> Código Abierto</h6>
+                                <p>MIT License - Personaliza y extiende según tus necesidades</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instalación Local -->
+            <div class="card">
+                <div class="card-header bg-light border-bottom">
+                    <h5 class="mb-0"><i class="fas fa-download" style="color: #667eea;"></i> Ejecutar Localmente</h5>
+                </div>
+                <div class="card-body">
+                    <div class="setup-option">
+                        <h3><i class="fas fa-bolt"></i> Opción 1: Configuración Automática (Recomendado)</h3>
+                        <p>El script setup.py instala todo automáticamente:</p>
+                        <code>git clone https://github.com/RGO-hash/sistema-encuestas.git
+cd sistema-encuestas
+python setup.py
+python run.py</code>
+                        <p style="margin-top: 10px; color: #666; font-size: 0.9em;">⏱️ Tiempo: ~8 minutos | ✓ Configura todo automáticamente</p>
+                    </div>
+
+                    <div class="setup-option">
+                        <h3><i class="fab fa-docker"></i> Opción 2: Docker (Sin Python)</h3>
+                        <p>Ejecuta con Docker sin necesidad de instalar Python:</p>
+                        <code>git clone https://github.com/RGO-hash/sistema-encuestas.git
+cd sistema-encuestas
+docker-compose up --build</code>
+                        <p style="margin-top: 10px; color: #666; font-size: 0.9em;">⏱️ Tiempo: ~15 minutos | ✓ Completamente aislado</p>
+                    </div>
+
+                    <div class="setup-option">
+                        <h3><i class="fas fa-cube"></i> Opción 3: GitHub Codespaces (Más Rápido)</h3>
+                        <p>Ejecuta directamente en GitHub sin descargar nada:</p>
+                        <ol>
+                            <li>Ve a <a href="https://github.com/RGO-hash/sistema-encuestas" target="_blank">GitHub</a></li>
+                            <li>Botón "Code" → "Codespaces" → "Create codespace on main"</li>
+                            <li>Ejecuta: <code style="display: inline;">python setup.py && python run.py</code></li>
+                        </ol>
+                        <p style="margin-top: 10px; color: #666; font-size: 0.9em;">⏱️ Tiempo: ~2 minutos | ✓ Sin instalación necesaria</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Credenciales -->
+            <div class="alert alert-info mt-4" role="alert">
+                <h5><i class="fas fa-key"></i> Credenciales por Defecto</h5>
+                <p style="margin-bottom: 10px;"><strong>Administrador:</strong></p>
+                <code style="display: block; margin-bottom: 15px;">Email: admin@test.com
+Contraseña: test123</code>
+                <p style="margin-bottom: 10px;"><strong>Participantes:</strong></p>
+                <code style="display: block;">Registrarse en la pestaña "Registro"
+Contraseña por defecto: nombre_apellido</code>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-5 text-white">
+                <p style="font-size: 0.9em;">
+                    <i class="fas fa-code"></i> Desarrollado con Flask, SQLAlchemy y Bootstrap
+                </p>
+                <p style="font-size: 0.9em;">
+                    <i class="fas fa-heart" style="color: #e74c3c;"></i>
+                    <a href="https://github.com/RGO-hash/sistema-encuestas" target="_blank" style="color: white; text-decoration: none;">
+                        Código abierto en GitHub
+                    </a>
+                </p>
+                <p style="font-size: 0.8em; margin-top: 20px; opacity: 0.8;">
+                    © 2025 Sistema de Votación Electrónica - MIT License
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function launchDemo() {
+            // Mostrar modal de loading
+            const modal = new bootstrap.Modal(document.createElement('div'));
+            
+            // Redirigir a demo
+            // Si tienes un servidor desplegado, reemplaza la URL
+            const demoUrl = 'https://sistema-votacion.herokuapp.com'; // O tu URL de producción
+            
+            // Por ahora mostrar instrucciones
+            showInstructions();
+        }
+
+        function showInstructions() {
+            const html = `
+                <div class="modal fade" id="instructionsModal" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header border-0">
+                                <h5 class="modal-title"><i class="fas fa-play" style="color: #667eea;"></i> Iniciar Demo</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Para acceder a la demo online, tienes varias opciones:</p>
+                                <div class="alert alert-info">
+                                    <strong>Opción 1:</strong> Desplegar en Heroku (GRATIS)
+                                    <ol style="margin-top: 10px;">
+                                        <li>Crea cuenta en <a href="https://www.heroku.com" target="_blank">Heroku</a></li>
+                                        <li>Clona el repositorio</li>
+                                        <li>Ejecuta: <code>heroku create && git push heroku main</code></li>
+                                    </ol>
+                                </div>
+                                <div class="alert alert-success">
+                                    <strong>Opción 2:</strong> Ejecutar Localmente (RECOMENDADO)
+                                    <p style="margin-top: 10px;">Ve a la sección "Ejecutar Localmente" arriba ↑</p>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-0">
+                                <a href="https://github.com/RGO-hash/sistema-encuestas" target="_blank" class="btn btn-primary">
+                                    <i class="fab fa-github"></i> Ver en GitHub
+                                </a>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', html);
+            const modal = new bootstrap.Modal(document.getElementById('instructionsModal'));
+            modal.show();
+        }
+
+        // Analytics (opcional)
+        console.log('Sistema de Votación Electrónica cargado');
+    </script>
+</body>
+</html>

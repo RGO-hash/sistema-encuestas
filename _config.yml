@@ -1,0 +1,34 @@
+# Configuración de GitHub Pages
+# Este archivo asegura que GitHub Pages sirva los archivos correctamente
+
+# URL base para los assets
+url: https://rgo-hash.github.io
+baseurl: /sistema-encuestas
+
+# Configuración del sitio
+title: 🗳️ Sistema de Votación Electrónica
+description: Plataforma completa para gestionar votaciones de forma segura y transparente
+author: RGO-hash
+
+# Build settings
+markdown: kramdown
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+# Excluir archivos de build
+exclude:
+  - venv/
+  - .gitignore
+  - README.md
+  - requirements.txt
+  - config.py
+  - run.py
+  - app/
+  - instance/
+  - .env
+  - .github/
+
+# Incluir archivos específicos
+include:
+  - docs/
