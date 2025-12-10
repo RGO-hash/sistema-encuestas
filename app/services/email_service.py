@@ -9,6 +9,74 @@ class EmailService:
     """Servicio para envío de correos"""
     
     @staticmethod
+    def send_confirmation_email(email, name, confirmation_url):
+        """
+        Enviar email de confirmación de registro
+        
+        Args:
+            email: Email del usuario
+            name: Nombre completo del usuario
+            confirmation_url: URL para confirmar el email
+        """
+        try:
+            subject = "Confirma tu email - Sistema de Encuestas"
+            
+            html_body = f"""
+            <html dir="ltr">
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }}
+                        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                        .header {{ background-color: #4361ee; color: white; padding: 30px; border-radius: 8px 8px 0 0; text-align: center; }}
+                        .content {{ background-color: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }}
+                        .button {{ display: inline-block; background-color: #4361ee; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
+                        .button:hover {{ background-color: #3a4fd8; }}
+                        .footer {{ text-align: center; margin-top: 30px; font-size: 12px; color: #666; }}
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h1>✉️ Confirma tu Email</h1>
+                        </div>
+                        <div class="content">
+                            <p>Hola <strong>{name}</strong>,</p>
+                            <p>Te damos la bienvenida al Sistema de Encuestas. Para completar tu registro, necesitas confirmar tu dirección de email.</p>
+                            <p>Haz clic en el siguiente botón para confirmar tu email:</p>
+                            <center>
+                                <a href="{confirmation_url}" class="button">Confirmar Email</a>
+                            </center>
+                            <p style="color: #666; font-size: 14px;">O copia este enlace en tu navegador:<br>
+                            <code style="background-color: #e9ecef; padding: 5px; border-radius: 3px; word-break: break-all;">{confirmation_url}</code></p>
+                            <hr>
+                            <p style="font-size: 13px; color: #999;">
+                                ⚠️ Este enlace expirará en 24 horas.<br>
+                                Si no solicitaste este registro, ignora este email.
+                            </p>
+                        </div>
+                        <div class="footer">
+                            <p>© {datetime.utcnow().year} Sistema de Encuestas. Todos los derechos reservados.</p>
+                        </div>
+                    </div>
+                </body>
+            </html>
+            """
+            
+            msg = Message(
+                subject=subject,
+                recipients=[email],
+                html=html_body
+            )
+            
+            mail.send(msg)
+            return True, "Email de confirmación enviado"
+            
+        except Exception as e:
+            current_app.logger.error(f"Error enviando email de confirmación a {email}: {str(e)}")
+            return False, str(e)
+    
+    @staticmethod
     def send_survey_invitation(participant_email, participant_name, survey_token=None):
         """
         Enviar invitación de encuesta al participante

@@ -157,6 +157,65 @@ class AdminUser(db.Model):
         }
 
 
+class ParticipantUser(db.Model):
+    """Modelo para participantes registrados (con autenticación)"""
+    __tablename__ = 'participant_users'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
+    password_hash = db.Column(db.String(255), nullable=False)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    is_active = db.Column(db.Boolean, default=False)  # Requiere confirmación de email
+    email_confirmed = db.Column(db.Boolean, default=False)
+    confirmation_token = db.Column(db.String(255), nullable=True, unique=True)
+    confirmation_token_expires = db.Column(db.DateTime, nullable=True)
+    participant_id = db.Column(db.Integer, db.ForeignKey('participants.id'), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relaciones
+    participant = db.relationship('Participant', backref='user_account', foreign_keys=[participant_id])
+    
+    def set_password(self, password):
+        """Hashear contraseña"""
+        from werkzeug.security import generate_password_hash
+        self.password_hash = generate_password_hash(password)
+    
+    def verify_password(self, password):
+        """Verificar contraseña"""
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.password_hash, password)
+    
+    def generate_confirmation_token(self):
+        """Generar token de confirmación"""
+        from datetime import timedelta
+        self.confirmation_token = secrets.token_urlsafe(32)
+        self.confirmation_token_expires = datetime.utcnow() + timedelta(hours=24)
+        return self.confirmation_token
+    
+    def verify_confirmation_token(self, token):
+        """Verificar token de confirmación"""
+        if self.confirmation_token != token:
+            return False
+        if datetime.utcnow() > self.confirmation_token_expires:
+            return False
+        return True
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'email': self.email,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'is_active': self.is_active,
+            'email_confirmed': self.email_confirmed,
+            'participant_id': self.participant_id,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
+        }
+
+
 class AuditLog(db.Model):
     """Modelo para logs de auditoría"""
     __tablename__ = 'audit_logs'

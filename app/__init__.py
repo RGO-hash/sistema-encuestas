@@ -7,6 +7,7 @@ from app.routes.auth import auth_bp
 from app.routes.participants import participants_bp
 from app.routes.survey import survey_bp
 from app.routes.voting import voting_bp
+from flask_jwt_extended import exceptions as jwt_exceptions
 
 def create_app(config_name=None):
     """Factory para crear la aplicación Flask"""
@@ -32,6 +33,27 @@ def create_app(config_name=None):
     db.init_app(app)
     jwt.init_app(app)
     mail.init_app(app)
+    
+    # Manejadores de errores JWT
+    @app.errorhandler(jwt_exceptions.NoAuthorizationError)
+    def handle_auth_error(e):
+        return jsonify({'error': 'Token de autorización no proporcionado'}), 401
+    
+    @app.errorhandler(jwt_exceptions.InvalidHeaderError)
+    def handle_invalid_header_error(e):
+        return jsonify({'error': 'Formato de header inválido'}), 401
+    
+    @app.errorhandler(jwt_exceptions.JWTDecodeError)
+    def handle_jwt_decode_error(e):
+        return jsonify({'error': 'Token inválido o expirado'}), 401
+    
+    @app.errorhandler(jwt_exceptions.WrongTokenError)
+    def handle_wrong_token_error(e):
+        return jsonify({'error': 'Token inválido'}), 401
+    
+    @app.errorhandler(jwt_exceptions.JWTExtendedException)
+    def handle_jwt_error(e):
+        return jsonify({'error': 'Error de autenticación JWT'}), 401
     
     # Configurar logging
     setup_logging(app)
