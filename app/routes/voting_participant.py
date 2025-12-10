@@ -58,12 +58,8 @@ def get_active_surveys():
     if not participant:
         return jsonify({'error': 'Participante no vinculado'}), 404
     
-    # Verificar si ya ha votado
-    if participant.has_voted:
-        return jsonify({
-            'message': 'Ya has votado en esta encuesta',
-            'surveys': []
-        }), 200
+    # Permitir votar en cada sesión - no verificar has_voted
+    # Los usuarios pueden votar cada vez que inician sesión
     
     # Obtener todas las posiciones activas
     positions = Position.query.filter_by(is_active=True).order_by(Position.order).all()
@@ -153,14 +149,14 @@ def submit_votes():
     if not participant:
         return jsonify({'error': 'Participante no vinculado'}), 404
     
-    # CRÍTICO: Validar que no haya votado ya
-    if participant.has_voted:
-        return jsonify({'error': 'Ya has votado en esta encuesta'}), 403
-    
-    # Verificar si existen votos previos del participante
-    existing_votes = Vote.query.filter_by(participant_id=participant.id).count()
-    if existing_votes > 0:
-        return jsonify({'error': 'Datos de voto inconsistentes. Contacta con administración'}), 409
+    # Permitir votar múltiples veces - eliminar votos previos al votar de nuevo
+    # Esto permite que cada sesión el usuario pueda votar
+    existing_votes = Vote.query.filter_by(participant_id=participant.id).all()
+    if existing_votes:
+        # Eliminar votos anteriores para permitir votar nuevamente
+        for vote in existing_votes:
+            db.session.delete(vote)
+        db.session.commit()
     
     data = request.get_json()
     votes_data = data.get('votes', {})

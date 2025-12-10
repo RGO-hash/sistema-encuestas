@@ -20,8 +20,7 @@ def get_survey_positions():
     if not participant:
         return jsonify({'error': 'Participante no encontrado'}), 404
     
-    if participant.has_voted:
-        return jsonify({'error': 'Este participante ya ha votado'}), 403
+    # Permitir votar en cada sesión - no verificar has_voted
     
     # Obtener posiciones activas con candidatos
     positions = Position.query.filter_by(is_active=True).order_by(Position.order).all()
@@ -67,8 +66,12 @@ def submit_vote():
     if not participant:
         return jsonify({'error': 'Participante no encontrado'}), 404
     
-    if participant.has_voted:
-        return jsonify({'error': 'Este participante ya ha votado'}), 403
+    # Permitir votar múltiples veces - eliminar votos previos
+    existing_votes = Vote.query.filter_by(participant_id=participant.id).all()
+    if existing_votes:
+        for vote in existing_votes:
+            db.session.delete(vote)
+        db.session.commit()
     
     try:
         # Registrar votos
