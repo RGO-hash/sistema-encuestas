@@ -149,14 +149,8 @@ def submit_votes():
     if not participant:
         return jsonify({'error': 'Participante no vinculado'}), 404
     
-    # Permitir votar múltiples veces - eliminar votos previos al votar de nuevo
-    # Esto permite que cada sesión el usuario pueda votar
-    existing_votes = Vote.query.filter_by(participant_id=participant.id).all()
-    if existing_votes:
-        # Eliminar votos anteriores para permitir votar nuevamente
-        for vote in existing_votes:
-            db.session.delete(vote)
-        db.session.commit()
+    # Permitir votar múltiples veces - los votos se acumulan sin eliminar previos
+    # Todos los votos quedan registrados en el historial
     
     data = request.get_json()
     votes_data = data.get('votes', {})

@@ -66,15 +66,10 @@ def submit_vote():
     if not participant:
         return jsonify({'error': 'Participante no encontrado'}), 404
     
-    # Permitir votar múltiples veces - eliminar votos previos
-    existing_votes = Vote.query.filter_by(participant_id=participant.id).all()
-    if existing_votes:
-        for vote in existing_votes:
-            db.session.delete(vote)
-        db.session.commit()
+    # Permitir votar múltiples veces - todos los votos se mantienen registrados
     
     try:
-        # Registrar votos
+        # Registrar votos (se acumulan sin eliminar previos)
         for position_id_str, vote_data in votes.items():
             position_id = int(position_id_str)
             position = Position.query.get(position_id)
@@ -82,14 +77,8 @@ def submit_vote():
             if not position:
                 continue
             
-            # Verificar que no exista voto previo
-            existing_vote = Vote.query.filter_by(
-                participant_id=participant.id,
-                position_id=position_id
-            ).first()
-            
-            if existing_vote:
-                db.session.delete(existing_vote)
+            # No eliminar votos previos - permitir múltiples votos del mismo usuario
+            # Todos los votos quedan registrados en el historial
             
             vote_type = vote_data.get('type')
             candidate_id = vote_data.get('candidate_id')
