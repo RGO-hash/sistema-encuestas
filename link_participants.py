@@ -8,19 +8,28 @@ with app.app_context():
     
     for u in users:
         if not u.participant:
-            # Crear un nuevo Participant para este usuario con sus datos
-            participant = Participant(
-                email=u.email,
-                first_name=u.first_name,
-                last_name=u.last_name
-            )
-            db.session.add(participant)
-            db.session.flush()  # Para obtener el ID
+            # Buscar si ya existe un Participant con este email
+            existing_participant = Participant.query.filter_by(email=u.email).first()
             
-            # Vincular el usuario al participante
-            u.participant_id = participant.id
-            db.session.add(u)
-            print(f'Vinculado: {u.email} -> Participante ID: {participant.id}')
+            if existing_participant:
+                # Vincular con el Participant existente
+                u.participant_id = existing_participant.id
+                db.session.add(u)
+                print(f'Vinculado con existente: {u.email} -> Participante ID: {existing_participant.id}')
+            else:
+                # Crear un nuevo Participant para este usuario con sus datos
+                participant = Participant(
+                    email=u.email,
+                    first_name=u.first_name,
+                    last_name=u.last_name
+                )
+                db.session.add(participant)
+                db.session.flush()  # Para obtener el ID
+                
+                # Vincular el usuario al participante
+                u.participant_id = participant.id
+                db.session.add(u)
+                print(f'Vinculado nuevo: {u.email} -> Participante ID: {participant.id}')
         else:
             print(f'Skipped: {u.email} (ya vinculado)')
     

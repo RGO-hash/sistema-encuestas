@@ -299,13 +299,24 @@ def send_invitations():
 @jwt_required()
 def get_stats():
     """Obtener estadísticas de participantes"""
-    total = Participant.query.count()
-    voted = Participant.query.filter_by(has_voted=True).count()
-    pending = total - voted
+    current_app.logger.info('=== LLAMADA A /api/participants/stats ===')
     
-    return jsonify({
+    total = Participant.query.count()
+    current_app.logger.info(f'Total participants: {total}')
+    
+    # Contar participantes únicos que han votado (basado en votos reales)
+    voted_participant_ids = db.session.query(Vote.participant_id).distinct().count()
+    current_app.logger.info(f'Voted participants (distinct): {voted_participant_ids}')
+    
+    pending = total - voted_participant_ids
+    participation_rate = (voted_participant_ids / total * 100) if total > 0 else 0
+    
+    result = {
         'total': total,
-        'voted': voted,
+        'voted': voted_participant_ids,
         'pending': pending,
-        'participation_rate': (voted / total * 100) if total > 0 else 0
-    }), 200
+        'participation_rate': participation_rate
+    }
+    current_app.logger.info(f'Retornando stats: {result}')
+    
+    return jsonify(result), 200

@@ -865,28 +865,45 @@
     });
 
     function getToken() {
-        return localStorage.getItem('adminToken');
+        // Intentar obtener token de admin primero, luego token de participante
+        return localStorage.getItem('adminToken') || localStorage.getItem('authToken');
     }
 
     function loadAdminDashboard() {
-        loadParticipants();
-        loadPositions();
-        loadCandidates();
+        // Estas funciones están definidas en otros scripts o no son necesarias aquí
+        // loadParticipants();
+        // loadPositions();
+        // loadCandidates();
+        console.log('Dashboard de admin cargado');
     }
 
     function updateStatistics() {
+        const token = getToken();
+        console.log('Actualizando estadísticas con token:', token ? 'Presente' : 'Ausente');
+        
         fetch('/api/participants/stats', {
             headers: {
-                'Authorization': 'Bearer ' + getToken()
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
             }
         })
-        .then(r => r.json())
+        .then(r => {
+            console.log('Response status stats:', r.status);
+            if (!r.ok) {
+                throw new Error(`HTTP error! status: ${r.status}`);
+            }
+            return r.json();
+        })
         .then(data => {
+            console.log('Stats data:', data);
             document.getElementById('totalParticipants').textContent = data.total;
             document.getElementById('votedParticipants').textContent = data.voted;
             document.getElementById('pendingVoters').textContent = data.pending;
             document.getElementById('participationRate').textContent = 
                 (data.total > 0 ? Math.round((data.voted / data.total) * 100) : 0) + '%';
+        })
+        .catch(error => {
+            console.error('Error cargando estadísticas:', error);
         });
     }
 

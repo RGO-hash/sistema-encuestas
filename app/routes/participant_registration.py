@@ -151,6 +151,7 @@ def register_participant():
             has_voted=False
         )
         db.session.add(participant)
+        db.session.flush()  # IMPORTANTE: Obtener ID del Participant antes de asignarlo
         
         # Relacionar
         participant_user.participant_id = participant.id

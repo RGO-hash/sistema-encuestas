@@ -92,11 +92,6 @@ function loadVotingTab() {
             loadVotingTab();
             return null;
         }
-        if (r.status === 404) {
-            console.error('Endpoint no encontrado - verificar blueprint');
-            container.innerHTML = '<div class="col-12 alert alert-danger">Error de configuración del servidor. Contacte al administrador.</div>';
-            return null;
-        }
         if (!r.ok) {
             console.error('Error en la respuesta:', r.status);
             throw new Error('Error del servidor: ' + r.status);
