@@ -47,70 +47,85 @@ def get_active_surveys():
         ]
     }
     """
-    participant_user_id = int(get_jwt_identity())
-    participant_user = ParticipantUser.query.get(participant_user_id)
-    
-    if not participant_user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
-    
-    # Obtener el Participant asociado
-    participant = participant_user.participant
-    if not participant:
-        return jsonify({'error': 'Participante no vinculado'}), 404
-    
-    # Permitir votar en cada sesión - no verificar has_voted
-    # Los usuarios pueden votar cada vez que inician sesión
-    
-    # Obtener todas las posiciones activas
-    positions = Position.query.filter_by(is_active=True).order_by(Position.order).all()
-    
-    if not positions:
-        return jsonify({
-            'message': 'No hay encuestas activas en este momento',
-            'surveys': []
-        }), 200
-    
-    surveys_data = []
-    
-    positions_data = []
-    for position in positions:
-        # Obtener candidatos para esta posición
-        candidates = Candidate.query.filter_by(
-            position_id=position.id
-        ).order_by(Candidate.order).all()
+    try:
+        participant_user_id = int(get_jwt_identity())
+        current_app.logger.info(f'Usuario autenticado ID: {participant_user_id}')
         
-        positions_data.append({
-            'id': position.id,
-            'name': position.name,
-            'description': position.description,
-            'candidates': [
-                {
-                    'id': c.id,
-                    'name': c.name,
-                    'description': c.description
-                }
-                for c in candidates
-            ]
+        participant_user = ParticipantUser.query.get(participant_user_id)
+        
+        if not participant_user:
+            current_app.logger.error(f'Usuario no encontrado: {participant_user_id}')
+            return jsonify({'error': 'Usuario no encontrado'}), 404
+        
+        # Obtener el Participant asociado
+        participant = participant_user.participant
+        if not participant:
+            current_app.logger.error(f'Participante no vinculado para usuario: {participant_user_id}')
+            return jsonify({'error': 'Participante no vinculado'}), 404
+        
+        current_app.logger.info(f'Participante encontrado: {participant.email}')
+        
+        # Permitir votar en cada sesión - no verificar has_voted
+        # Los usuarios pueden votar cada vez que inician sesión
+        
+        # Obtener todas las posiciones activas
+        positions = Position.query.filter_by(is_active=True).order_by(Position.order).all()
+        
+        current_app.logger.info(f'Posiciones activas encontradas: {len(positions)}')
+        
+        if not positions:
+            return jsonify({
+                'message': 'No hay encuestas activas en este momento',
+                'surveys': []
+            }), 200
+        
+        surveys_data = []
+        
+        positions_data = []
+        for position in positions:
+            # Obtener candidatos para esta posición
+            candidates = Candidate.query.filter_by(
+                position_id=position.id
+            ).order_by(Candidate.order).all()
+            
+            positions_data.append({
+                'id': position.id,
+                'name': position.name,
+                'description': position.description,
+                'candidates': [
+                    {
+                        'id': c.id,
+                        'name': c.name,
+                        'description': c.description
+                    }
+                    for c in candidates
+                ]
+            })
+        
+        # Por ahora, retornamos una "encuesta" con todas las posiciones
+        surveys_data.append({
+            'id': 1,
+            'title': 'Encuesta General',
+            'description': 'Votación de posiciones',
+            'positions': positions_data,
+            'has_voted': participant.has_voted
         })
-    
-    # Por ahora, retornamos una "encuesta" con todas las posiciones
-    surveys_data.append({
-        'id': 1,
-        'title': 'Encuesta General',
-        'description': 'Votación de posiciones',
-        'positions': positions_data,
-        'has_voted': participant.has_voted
-    })
-    
-    return jsonify({
-        'participant': {
-            'id': participant.id,
-            'email': participant.email,
-            'first_name': participant.first_name,
-            'last_name': participant.last_name
-        },
-        'surveys': surveys_data
-    }), 200
+        
+        current_app.logger.info(f'Retornando {len(surveys_data)} encuestas con {len(positions_data)} posiciones')
+        
+        return jsonify({
+            'participant': {
+                'id': participant.id,
+                'email': participant.email,
+                'first_name': participant.first_name,
+                'last_name': participant.last_name
+            },
+            'surveys': surveys_data
+        }), 200
+        
+    except Exception as e:
+        current_app.logger.error(f'Error en get_active_surveys: {str(e)}', exc_info=True)
+        return jsonify({'error': 'Error interno del servidor'}), 500
 
 @voting_participant_bp.route('/api/voting/submit-votes', methods=['POST'])
 @jwt_required()
