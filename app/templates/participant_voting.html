@@ -1,0 +1,548 @@
+{% extends "base.html" %}
+
+{% block title %}Área de Votación - Sistema de Encuestas{% endblock %}
+
+{% block extra_css %}
+<style>
+    .voting-container {
+        padding: 30px 0;
+        min-height: 100vh;
+        background: #f8f9fa;
+    }
+    
+    .voting-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 40px 0;
+        margin-bottom: 40px;
+        border-radius: 0;
+    }
+    
+    .voting-header h1 {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+    
+    .voting-header p {
+        font-size: 16px;
+        opacity: 0.9;
+        margin-bottom: 0;
+    }
+    
+    .position-card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-left: 5px solid #667eea;
+    }
+    
+    .position-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .position-description {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .candidates-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .candidate-option {
+        padding: 15px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: white;
+    }
+    
+    .candidate-option:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+    
+    .candidate-option input[type="radio"] {
+        margin-right: 10px;
+    }
+    
+    .candidate-option input[type="radio"]:checked + label {
+        color: #667eea;
+        font-weight: 600;
+    }
+    
+    .candidate-name {
+        font-weight: 600;
+        color: #333;
+        cursor: pointer;
+    }
+    
+    .candidate-description {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .special-votes {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+    }
+    
+    .special-vote-option {
+        text-align: center;
+        padding: 10px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .special-vote-option:hover {
+        border-color #667eea;
+        background: #f8f9ff;
+    }
+    
+    .special-vote-option input[type="radio"] {
+        display: none;
+    }
+    
+    .special-vote-option input[type="radio"]:checked + .vote-label {
+        color: #667eea;
+        font-weight: 700;
+    }
+    
+    .vote-label {
+        display: block;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .voting-actions {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        text-align: center;
+        position: sticky;
+        bottom: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-submit-votes {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 12px 40px;
+        font-weight: 600;
+        border-radius: 6px;
+        color: white;
+        min-width: 200px;
+        transition: transform 0.2s;
+    }
+    
+    .btn-submit-votes:hover {
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    .btn-submit-votes:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .alert {
+        border-radius: 6px;
+        border: none;
+    }
+    
+    .no-votes-message {
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        text-align: center;
+        color: #666;
+    }
+    
+    .user-info {
+        background: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .user-name {
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .logout-btn {
+        background: none;
+        border: none;
+        color: #667eea;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 14px;
+    }
+    
+    .logout-btn:hover {
+        color: #764ba2;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="voting-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1><i class="fas fa-check-circle"></i> Área de Votación</h1>
+                <p id="userGreeting">Bienvenido, cargando...</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <button class="btn btn-light" onclick="logout()" title="Cerrar sesión">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="voting-container">
+    <div class="container">
+        <div id="alertContainer"></div>
+        
+        <div class="user-info">
+            <span class="user-name" id="userInfoDisplay">Cargando información...</span>
+            <span id="voteStatusDisplay"></span>
+        </div>
+        
+        <div id="votingContent">
+            <!-- Contenido cargado dinámicamente -->
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmación de Voto -->
+<div class="modal fade" id="confirmVoteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirmar Votación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas enviar tus votos?</p>
+                <p class="text-muted" style="font-size: 12px;">
+                    Una vez confirmado, no podrás cambiar tus votos en esta encuesta.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmSubmitVotes()">
+                    Confirmar Voto
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let authManager = null;
+let currentSurveys = null;
+let confirmVoteModal = null;
+
+// Inicializar al cargar la página
+window.addEventListener('load', async () => {
+    confirmVoteModal = new bootstrap.Modal(document.getElementById('confirmVoteModal'));
+    
+    // Verificar autenticación
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+        window.location.href = '/login-participante';
+        return;
+    }
+    
+    // Cargar información del usuario y encuestas
+    await loadUserInfo();
+    await loadSurveys();
+});
+
+async function loadUserInfo() {
+    try {
+        const response = await fetch('/api/voting/user-info', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const user = data.user;
+            document.getElementById('userGreeting').textContent = 
+                `Bienvenido, ${user.first_name} ${user.last_name}`;
+            document.getElementById('userInfoDisplay').textContent = 
+                `${user.first_name} ${user.last_name} (${user.email})`;
+        } else {
+            window.location.href = '/login-participante';
+        }
+    } catch (error) {
+        console.error('Error cargando información:', error);
+        showAlert('Error al cargar información del usuario', 'danger');
+    }
+}
+
+async function loadSurveys() {
+    try {
+        const response = await fetch('/api/voting/active-surveys', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            currentSurveys = data.surveys;
+            
+            // Verificar estado de voto
+            const statusResponse = await fetch('/api/voting/vote-status', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                }
+            });
+            
+            if (statusResponse.ok) {
+                const statusData = await statusResponse.json();
+                if (statusData.has_voted) {
+                    document.getElementById('voteStatusDisplay').innerHTML = 
+                        '<span class="badge bg-success">✓ Ya has votado</span>';
+                    renderAlreadyVoted();
+                    return;
+                } else {
+                    document.getElementById('voteStatusDisplay').innerHTML = 
+                        '<span class="badge bg-warning">Pendiente de votar</span>';
+                }
+            }
+            
+            renderSurveys(data.surveys);
+        } else {
+            showAlert('Error al cargar las encuestas', 'danger');
+        }
+    } catch (error) {
+        console.error('Error cargando encuestas:', error);
+        showAlert('Error de conexión', 'danger');
+    }
+}
+
+function renderSurveys(surveys) {
+    const content = document.getElementById('votingContent');
+    
+    if (!surveys || surveys.length === 0) {
+        content.innerHTML = `
+            <div class="no-votes-message">
+                <i class="fas fa-inbox" style="font-size: 48px; color: #ccc; margin-bottom: 20px; display: block;"></i>
+                <p>No hay encuestas activas en este momento.</p>
+                <small>Vuelve pronto para votar.</small>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    
+    surveys.forEach(survey => {
+        html += `<form id="votingForm" data-survey-id="${survey.id}">`;
+        
+        survey.positions.forEach(position => {
+            html += `
+                <div class="position-card">
+                    <div class="position-title">${position.name}</div>
+                    ${position.description ? `<div class="position-description">${position.description}</div>` : ''}
+                    
+                    <div class="candidates-group">
+            `;
+            
+            // Agregar candidatos
+            position.candidates.forEach(candidate => {
+                const candidateId = `candidate_${position.id}_${candidate.id}`;
+                html += `
+                    <div class="candidate-option">
+                        <input type="radio" name="position_${position.id}" id="${candidateId}" 
+                               value="candidate_${candidate.id}" data-type="candidate" 
+                               data-candidate-id="${candidate.id}">
+                        <label for="${candidateId}" class="candidate-name mb-0">
+                            ${candidate.name}
+                        </label>
+                        ${candidate.description ? `
+                            <div class="candidate-description">${candidate.description}</div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+            
+            html += `
+                    </div>
+                    <div class="special-votes">
+                        <div class="special-vote-option">
+                            <input type="radio" name="position_${position.id}" 
+                                   id="no_se_${position.id}" value="no_se" data-type="no_se">
+                            <label for="no_se_${position.id}" class="vote-label">No Sé</label>
+                        </div>
+                        <div class="special-vote-option">
+                            <input type="radio" name="position_${position.id}" 
+                                   id="ninguno_${position.id}" value="ninguno" data-type="ninguno">
+                            <label for="ninguno_${position.id}" class="vote-label">Ninguno</label>
+                        </div>
+                        <div class="special-vote-option">
+                            <input type="radio" name="position_${position.id}" 
+                                   id="abstention_${position.id}" value="abstencion" data-type="abstencion">
+                            <label for="abstention_${position.id}" class="vote-label">Abstención</label>
+                        </div>
+                        <div class="special-vote-option">
+                            <input type="radio" name="position_${position.id}" 
+                                   id="blank_${position.id}" value="blanco" data-type="blanco">
+                            <label for="blank_${position.id}" class="vote-label">En Blanco</label>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += `</form>`;
+    });
+    
+    content.innerHTML = html + `
+        <div class="voting-actions">
+            <button class="btn btn-submit-votes" onclick="prepareSubmitVotes()">
+                <i class="fas fa-check"></i> Confirmar Votos
+            </button>
+        </div>
+    `;
+}
+
+function renderAlreadyVoted() {
+    document.getElementById('votingContent').innerHTML = `
+        <div class="no-votes-message">
+            <i class="fas fa-check-circle" style="font-size: 48px; color: #28a745; margin-bottom: 20px; display: block;"></i>
+            <h4>¡Gracias por votar!</h4>
+            <p>Tu voto ha sido registrado exitosamente.</p>
+            <small>Tu participación es importante para nosotros.</small>
+            <div style="margin-top: 25px;">
+                <a href="/resultados" class="btn btn-primary">
+                    Ver Resultados
+                </a>
+            </div>
+        </div>
+    `;
+}
+
+function prepareSubmitVotes() {
+    const form = document.getElementById('votingForm');
+    if (!form) return;
+    
+    // Verificar que todas las posiciones tengan voto
+    const positions = currentSurveys[0].positions;
+    let allVoted = true;
+    
+    positions.forEach(position => {
+        const radioButtons = form.querySelectorAll(`input[name="position_${position.id}"]`);
+        const isChecked = Array.from(radioButtons).some(rb => rb.checked);
+        if (!isChecked) {
+            allVoted = false;
+        }
+    });
+    
+    if (!allVoted) {
+        showAlert('Por favor, selecciona una opción para cada posición', 'warning');
+        return;
+    }
+    
+    // Mostrar modal de confirmación
+    confirmVoteModal.show();
+}
+
+async function confirmSubmitVotes() {
+    confirmVoteModal.hide();
+    
+    const form = document.getElementById('votingForm');
+    const positions = currentSurveys[0].positions;
+    const votes = {};
+    
+    // Recopilar votos
+    positions.forEach(position => {
+        const radioButtons = form.querySelectorAll(`input[name="position_${position.id}"]:checked`);
+        const checked = radioButtons[0];
+        
+        if (checked) {
+            const voteType = checked.dataset.type;
+            const candidateId = voteType === 'candidate' ? parseInt(checked.dataset.candidateId) : null;
+            
+            votes[position.id] = {
+                type: voteType,
+                candidate_id: candidateId
+            };
+        }
+    });
+    
+    try {
+        const response = await fetch('/api/voting/submit-votes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            },
+            body: JSON.stringify({ votes })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showAlert('¡Votos registrados exitosamente!', 'success');
+            setTimeout(() => {
+                loadSurveys();
+            }, 1500);
+        } else {
+            showAlert(data.error || 'Error al registrar votos', 'danger');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('Error de conexión', 'danger');
+    }
+}
+
+function logout() {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_type');
+    window.location.href = '/';
+}
+
+function showAlert(message, type) {
+    const alertContainer = document.getElementById('alertContainer');
+    alertContainer.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    alertContainer.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+{% endblock %}

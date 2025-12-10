@@ -12,14 +12,26 @@ class DashboardManager {
     async init() {
         // Verificar autenticación
         if (!authManager.isAuthenticated()) {
+            console.log('Usuario no autenticado, mostrando login');
             this.showLoginModal();
             return;
         }
         
+        console.log('Usuario autenticado, inicializando dashboard');
+        const token = authManager.getToken();
+        console.log('Token presente:', !!token);
+        
         this.setupEventListeners();
-        await this.loadParticipants();
-        await this.loadPositions();
-        await this.loadStats();
+        
+        // Cargar datos después de establecer los event listeners
+        try {
+            await this.loadParticipants();
+            await this.loadPositions();
+            await this.loadStats();
+        } catch (error) {
+            console.error('Error durante la inicialización:', error);
+            showNotification('Error cargando datos. Por favor recarga la página.', 'danger');
+        }
     }
     
     setupEventListeners() {
@@ -52,6 +64,10 @@ class DashboardManager {
                 animateNumber(document.getElementById('total-participants'), response.total);
                 animateNumber(document.getElementById('voted-participants'), response.voted);
                 animateNumber(document.getElementById('pending-participants'), response.pending);
+            } else if (!authManager.isAuthenticated()) {
+                // Si no hay respuesta y no está autenticado, mostrar login
+                console.log('No autenticado, mostrando login');
+                this.showLoginModal();
             }
         } catch (error) {
             console.error('Error cargando estadísticas:', error);
@@ -444,16 +460,41 @@ class DashboardManager {
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const data = {
-                email: document.getElementById('login-email').value,
-                password: document.getElementById('login-password').value
-            };
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            
+            console.log('=== INICIO DE SESIÓN ===');
+            console.log('Email:', email);
+            
+            const data = { email, password };
             
             const response = await api.post('/auth/login', data);
-            if (response) {
+            console.log('Response de login:', response);
+            
+            if (response && response.access_token) {
+                console.log('✓ Login exitoso');
+                console.log('Token recibido:', response.access_token.substring(0, 20) + '...');
+                
+                // Guardar token y usuario
                 authManager.setToken(response.access_token);
                 authManager.setUser(response.user);
-                window.location.reload();
+                
+                // Verificar que se guardó
+                const savedToken = authManager.getToken();
+                const savedUser = authManager.getUser();
+                console.log('✓ Token guardado:', !!savedToken);
+                console.log('✓ Usuario guardado:', !!savedUser);
+                
+                if (savedToken && savedUser) {
+                    console.log('Recargando página...');
+                    window.location.reload();
+                } else {
+                    showNotification('Error: No se pudo guardar la sesión.', 'danger');
+                    console.error('Fallo al guardar sesión');
+                }
+            } else {
+                console.error('✗ Login falló');
+                showNotification('Credenciales inválidas o error de conexión', 'danger');
             }
         });
     }

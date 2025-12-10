@@ -84,7 +84,7 @@ def create_participant():
     db.session.commit()
     
     # Log de auditoría
-    admin_id = get_jwt_identity()
+    admin_id = int(get_jwt_identity())
     AuditService.log_action(
         action='CREATE',
         entity_type='PARTICIPANT',
@@ -139,7 +139,7 @@ def update_participant(participant_id):
     db.session.commit()
     
     # Log de auditoría
-    admin_id = get_jwt_identity()
+    admin_id = int(get_jwt_identity())
     AuditService.log_action(
         action='UPDATE',
         entity_type='PARTICIPANT',
@@ -169,7 +169,7 @@ def delete_participant(participant_id):
     db.session.commit()
     
     # Log de auditoría
-    admin_id = get_jwt_identity()
+    admin_id = int(get_jwt_identity())
     AuditService.log_action(
         action='DELETE',
         entity_type='PARTICIPANT',
@@ -240,7 +240,7 @@ def bulk_upload_participants():
         db.session.commit()
         
         # Log de auditoría
-        admin_id = get_jwt_identity()
+        admin_id = int(get_jwt_identity())
         AuditService.log_action(
             action='BULK_CREATE',
             entity_type='PARTICIPANT',
@@ -278,7 +278,7 @@ def send_invitations():
     success_count, failed_count, errors = EmailService.send_bulk_invitations(participants)
     
     # Log de auditoría
-    admin_id = get_jwt_identity()
+    admin_id = int(get_jwt_identity())
     AuditService.log_action(
         action='SEND_INVITATIONS',
         entity_type='PARTICIPANT',

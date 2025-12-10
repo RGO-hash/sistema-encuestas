@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+
+{% block title %}Registro de Participante - Sistema de Encuestas{% endblock %}
+
+{% block extra_css %}
+<style>
+    .registration-container {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .registration-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        padding: 40px;
+        max-width: 500px;
+        width: 100%;
+    }
+    
+    .registration-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    
+    .registration-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 10px;
+    }
+    
+    .registration-header p {
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 8px;
+    }
+    
+    .form-control {
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+    
+    .form-control:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .password-requirements {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+        margin-top: 10px;
+        font-size: 12px;
+    }
+    
+    .password-requirement {
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .password-requirement i {
+        margin-right: 8px;
+        width: 20px;
+        text-align: center;
+    }
+    
+    .requirement-unmet {
+        color: #dc3545;
+    }
+    
+    .requirement-met {
+        color: #28a745;
+    }
+    
+    .btn-register {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 12px;
+        font-weight: 600;
+        border-radius: 6px;
+        color: white;
+        width: 100%;
+        transition: transform 0.2s;
+    }
+    
+    .btn-register:hover {
+        transform: translateY(-2px);
+        color: white;
+    }
+    
+    .btn-register:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .login-link {
+        text-align: center;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid #eee;
+    }
+    
+    .login-link a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+    
+    .alert {
+        border-radius: 6px;
+        border: none;
+        margin-bottom: 20px;
+    }
+    
+    .email-availability {
+        margin-top: 5px;
+        font-size: 12px;
+        display: none;
+    }
+    
+    .email-available {
+        color: #28a745;
+    }
+    
+    .email-unavailable {
+        color: #dc3545;
+    }
+    
+    .spinner-border {
+        width: 1rem;
+        height: 1rem;
+        margin-right: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="registration-container">
+    <div class="registration-card">
+        <div class="registration-header">
+            <h1><i class="fas fa-user-plus"></i> Registro</h1>
+            <p>Crea tu cuenta para votar</p>
+        </div>
+        
+        <div id="alertContainer"></div>
+        
+        <form id="registrationForm">
+            <div class="form-group">
+                <label for="firstName" class="form-label">Nombre *</label>
+                <input type="text" class="form-control" id="firstName" name="first_name" 
+                       placeholder="Juan" required minlength="2" maxlength="100">
+                <small class="text-muted">Mínimo 2 caracteres</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="lastName" class="form-label">Apellido *</label>
+                <input type="text" class="form-control" id="lastName" name="last_name" 
+                       placeholder="Pérez García" required minlength="2" maxlength="100">
+                <small class="text-muted">Mínimo 2 caracteres</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="email" class="form-label">Email *</label>
+                <div class="position-relative">
+                    <input type="email" class="form-control" id="email" name="email" 
+                           placeholder="correo@ejemplo.com" required maxlength="120">
+                    <div id="emailStatus" class="email-availability"></div>
+                </div>
+                <small class="text-muted">Usaremos este email para tu cuenta</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="password" class="form-label">Contraseña *</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="password" name="password" 
+                           placeholder="Ingresa una contraseña segura" required minlength="8">
+                    <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                
+                <div class="password-requirements">
+                    <div class="password-requirement requirement-unmet" id="req-length">
+                        <i class="fas fa-circle"></i>
+                        <span>Mínimo 8 caracteres</span>
+                    </div>
+                    <div class="password-requirement requirement-unmet" id="req-upper">
+                        <i class="fas fa-circle"></i>
+                        <span>Una letra mayúscula</span>
+                    </div>
+                    <div class="password-requirement requirement-unmet" id="req-lower">
+                        <i class="fas fa-circle"></i>
+                        <span>Una letra minúscula</span>
+                    </div>
+                    <div class="password-requirement requirement-unmet" id="req-number">
+                        <i class="fas fa-circle"></i>
+                        <span>Un número</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="passwordConfirm" class="form-label">Confirmar Contraseña *</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="passwordConfirm" 
+                           name="password_confirm" placeholder="Confirma tu contraseña" required>
+                    <button class="btn btn-outline-secondary" type="button" id="togglePasswordConfirm">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <div id="passwordMatchStatus" style="font-size: 12px; margin-top: 5px;"></div>
+            </div>
+            
+            <button type="submit" class="btn btn-register" id="submitBtn">
+                <span id="submitBtnText">Registrarse</span>
+                <span id="submitSpinner" style="display: none;">
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Registrando...
+                </span>
+            </button>
+        </form>
+        
+        <div class="login-link">
+            ¿Ya tienes cuenta?
+            <a href="/login-participante">Inicia sesión aquí</a>
+        </div>
+    </div>
+</div>
+
+<script>
+const form = document.getElementById('registrationForm');
+const firstNameInput = document.getElementById('firstName');
+const lastNameInput = document.getElementById('lastName');
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const passwordConfirmInput = document.getElementById('passwordConfirm');
+const submitBtn = document.getElementById('submitBtn');
+const alertContainer = document.getElementById('alertContainer');
+
+// Toggle visibilidad de contraseña
+document.getElementById('togglePassword').addEventListener('click', () => {
+    const type = passwordInput.type === 'password' ? 'text' : 'password';
+    passwordInput.type = type;
+});
+
+document.getElementById('togglePasswordConfirm').addEventListener('click', () => {
+    const type = passwordConfirmInput.type === 'password' ? 'text' : 'password';
+    passwordConfirmInput.type = type;
+});
+
+// Validar requisitos de contraseña
+passwordInput.addEventListener('input', () => {
+    const password = passwordInput.value;
+    
+    document.getElementById('req-length').classList.toggle('requirement-met', password.length >= 8);
+    document.getElementById('req-length').classList.toggle('requirement-unmet', password.length < 8);
+    
+    document.getElementById('req-upper').classList.toggle('requirement-met', /[A-Z]/.test(password));
+    document.getElementById('req-upper').classList.toggle('requirement-unmet', !/[A-Z]/.test(password));
+    
+    document.getElementById('req-lower').classList.toggle('requirement-met', /[a-z]/.test(password));
+    document.getElementById('req-lower').classList.toggle('requirement-unmet', !/[a-z]/.test(password));
+    
+    document.getElementById('req-number').classList.toggle('requirement-met', /[0-9]/.test(password));
+    document.getElementById('req-number').classList.toggle('requirement-unmet', !/[0-9]/.test(password));
+    
+    checkPasswordMatch();
+});
+
+// Validar coincidencia de contraseñas
+function checkPasswordMatch() {
+    const status = document.getElementById('passwordMatchStatus');
+    if (passwordConfirmInput.value === '') {
+        status.innerHTML = '';
+        return;
+    }
+    
+    if (passwordInput.value === passwordConfirmInput.value) {
+        status.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> Las contraseñas coinciden</span>';
+    } else {
+        status.innerHTML = '<span class="text-danger"><i class="fas fa-times-circle"></i> Las contraseñas no coinciden</span>';
+    }
+}
+
+passwordConfirmInput.addEventListener('input', checkPasswordMatch);
+
+// Validar email en tiempo real (AJAX)
+let emailCheckTimeout;
+emailInput.addEventListener('input', () => {
+    clearTimeout(emailCheckTimeout);
+    const status = document.getElementById('emailStatus');
+    
+    if (!emailInput.value) {
+        status.style.display = 'none';
+        return;
+    }
+    
+    status.style.display = 'block';
+    status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+    
+    emailCheckTimeout = setTimeout(async () => {
+        try {
+            const response = await fetch('/api/participant-auth/check-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: emailInput.value })
+            });
+            
+            const data = await response.json();
+            
+            if (data.available) {
+                status.innerHTML = '<span class="email-available"><i class="fas fa-check-circle"></i> Email disponible</span>';
+            } else {
+                status.innerHTML = '<span class="email-unavailable"><i class="fas fa-times-circle"></i> Email no disponible</span>';
+            }
+        } catch (error) {
+            console.error('Error verificando email:', error);
+            status.innerHTML = '<span class="text-warning"><i class="fas fa-exclamation-circle"></i> Error verificando email</span>';
+        }
+    }, 500);
+});
+
+// Enviar formulario
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    // Validar formulario básico
+    if (!form.checkValidity()) {
+        form.classList.add('was-validated');
+        return;
+    }
+    
+    // Validar coincidencia de contraseñas
+    if (passwordInput.value !== passwordConfirmInput.value) {
+        showAlert('Las contraseñas no coinciden', 'danger');
+        return;
+    }
+    
+    submitBtn.disabled = true;
+    document.getElementById('submitBtnText').style.display = 'none';
+    document.getElementById('submitSpinner').style.display = 'inline';
+    
+    try {
+        const response = await fetch('/api/participant-auth/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: emailInput.value.toLowerCase(),
+                first_name: firstNameInput.value,
+                last_name: lastNameInput.value,
+                password: passwordInput.value,
+                password_confirm: passwordConfirmInput.value
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Guardar token y redirigir
+            localStorage.setItem('access_token', data.access_token);
+            localStorage.setItem('user_type', 'participant');
+            showAlert('¡Registro exitoso! Redirigiendo...', 'success');
+            
+            setTimeout(() => {
+                window.location.href = '/votar';
+            }, 1500);
+        } else {
+            showAlert(data.error || 'Error en el registro', 'danger');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('Error de conexión. Intenta de nuevo.', 'danger');
+    } finally {
+        submitBtn.disabled = false;
+        document.getElementById('submitBtnText').style.display = 'inline';
+        document.getElementById('submitSpinner').style.display = 'none';
+    }
+});
+
+function showAlert(message, type) {
+    alertContainer.innerHTML = `
+        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+}
+</script>
+{% endblock %}

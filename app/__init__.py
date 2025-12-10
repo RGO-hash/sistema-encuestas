@@ -7,7 +7,12 @@ from app.routes.auth import auth_bp
 from app.routes.participants import participants_bp
 from app.routes.survey import survey_bp
 from app.routes.voting import voting_bp
+from app.routes.participant_registration import participant_reg_bp
+from app.routes.candidates import candidates_bp
+from app.routes.public_results import results_bp
+from app.routes.voting_participant import voting_participant_bp
 from flask_jwt_extended import exceptions as jwt_exceptions
+from werkzeug.exceptions import HTTPException
 
 def create_app(config_name=None):
     """Factory para crear la aplicación Flask"""
@@ -34,25 +39,49 @@ def create_app(config_name=None):
     jwt.init_app(app)
     mail.init_app(app)
     
-    # Manejadores de errores JWT
+    # Manejadores de errores JWT - Usando decoradores de excepciones
+    try:
+        @jwt.invalid_token_loader
+        def invalid_token_callback(error):
+            app.logger.warning(f'Invalid token: {error}')
+            return jsonify({'error': 'Token inválido o expirado'}), 401
+        
+        @jwt.unauthorized_loader
+        def missing_token_callback(error):
+            app.logger.warning(f'Missing token: {error}')
+            return jsonify({'error': 'Token de autorización no proporcionado'}), 401
+        
+        @jwt.expired_token_loader
+        def expired_token_callback(jwt_header, jwt_data):
+            app.logger.warning('Token expirado')
+            return jsonify({'error': 'Token expirado'}), 401
+    except Exception as e:
+        app.logger.warning(f'Error configurando JWT callbacks: {e}')
+    
+    # Manejadores de excepciones HTTP
     @app.errorhandler(jwt_exceptions.NoAuthorizationError)
     def handle_auth_error(e):
+        app.logger.warning(f'NoAuthorizationError: {str(e)}')
         return jsonify({'error': 'Token de autorización no proporcionado'}), 401
     
     @app.errorhandler(jwt_exceptions.InvalidHeaderError)
     def handle_invalid_header_error(e):
+        app.logger.warning(f'InvalidHeaderError: {str(e)}')
         return jsonify({'error': 'Formato de header inválido'}), 401
     
     @app.errorhandler(jwt_exceptions.JWTDecodeError)
     def handle_jwt_decode_error(e):
+        app.logger.warning(f'JWTDecodeError: {str(e)}')
         return jsonify({'error': 'Token inválido o expirado'}), 401
     
     @app.errorhandler(jwt_exceptions.WrongTokenError)
     def handle_wrong_token_error(e):
+        app.logger.warning(f'WrongTokenError: {str(e)}')
         return jsonify({'error': 'Token inválido'}), 401
     
     @app.errorhandler(jwt_exceptions.JWTExtendedException)
     def handle_jwt_error(e):
+        app.logger.warning(f'JWTExtendedException: {str(e)}')
         return jsonify({'error': 'Error de autenticación JWT'}), 401
     
     # Configurar logging
@@ -63,6 +92,10 @@ def create_app(config_name=None):
     app.register_blueprint(participants_bp)
     app.register_blueprint(survey_bp)
     app.register_blueprint(voting_bp)
+    app.register_blueprint(participant_reg_bp)
+    app.register_blueprint(candidates_bp)
+    app.register_blueprint(results_bp)
+    app.register_blueprint(voting_participant_bp)
     
     # Rutas públicas
     @app.route('/')
@@ -77,8 +110,30 @@ def create_app(config_name=None):
     
     @app.route('/results')
     def results_page():
-        """Página de resultados"""
-        return render_template('results.html', is_survey_page=False)
+        """Página de resultados públicos"""
+        return render_template('public_results.html', is_survey_page=False)
+    
+    @app.route('/resultados')
+    def results_spanish():
+        """Página de resultados públicos (en español)"""
+        return render_template('public_results.html', is_survey_page=False)
+    
+    @app.route('/registro')
+    def registration_page():
+        """Página de registro de participantes"""
+        return render_template('participant_registration.html', is_survey_page=False)
+    
+    @app.route('/login-participante')
+    @app.route('/participant-login')
+    def participant_login_page():
+        """Página de login de participantes"""
+        return render_template('participant_login.html', is_survey_page=False)
+    
+    @app.route('/votar')
+    @app.route('/vote')
+    def voting_page():
+        """Página de votación (requiere autenticación)"""
+        return render_template('participant_voting.html', is_survey_page=False)
     
     # Manejo de errores
     @app.errorhandler(404)

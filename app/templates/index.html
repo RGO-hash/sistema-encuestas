@@ -1,193 +1,905 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - Sistema de Encuestas{% endblock %}
+{% block title %}Sistema de Votación{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .stat-card h5 {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        opacity: 0.9;
+    }
+
+    .stat-card .number {
+        font-size: 32px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .stat-card .label {
+        font-size: 13px;
+        opacity: 0.8;
+    }
+
+    .nav-tabs {
+        border-bottom: 2px solid #e9ecef;
+        margin-bottom: 30px;
+    }
+
+    .nav-tabs .nav-link {
+        color: #666;
+        border: none;
+        border-bottom: 3px solid transparent;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        padding: 10px 20px;
+    }
+
+    .nav-tabs .nav-link:hover {
+        color: #667eea;
+        border-bottom-color: #667eea;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: #667eea;
+        border-bottom-color: #667eea;
+        background-color: transparent;
+    }
+
+    .tab-content {
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-section {
+        background: #f8f9fa;
+        padding: 30px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        color: #667eea;
+        font-weight: 600;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #667eea;
+    }
+
+    .results-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .result-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .candidate-result {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border-bottom: 1px solid #e9ecef;
+        gap: 15px;
+    }
+
+    .candidate-result:last-child {
+        border-bottom: none;
+    }
+
+    .candidate-photo {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: #e9ecef;
+    }
+
+    .vote-bar {
+        width: 100%;
+        background: #e9ecef;
+        border-radius: 10px;
+        height: 20px;
+        overflow: hidden;
+        margin-top: 5px;
+    }
+
+    .vote-progress {
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding-right: 5px;
+        color: white;
+        font-size: 11px;
+        font-weight: bold;
+    }
+
+    .login-section {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 30px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .password-requirements {
+        font-size: 13px;
+        color: #666;
+        margin-top: 10px;
+        padding: 10px;
+        background: white;
+        border-radius: 5px;
+        border-left: 3px solid #667eea;
+    }
+
+    .requirement {
+        margin: 5px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .requirement.met {
+        color: #28a745;
+    }
+
+    .requirement.unmet {
+        color: #dc3545;
+    }
+
+    .requirement i {
+        font-size: 12px;
+    }
+
+    .survey-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .position-title {
+        color: #667eea;
+        font-weight: 600;
+        margin-bottom: 15px;
+        font-size: 18px;
+    }
+
+    .candidate-vote-option {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .candidate-vote-option:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+
+    .candidate-vote-option.selected {
+        border-color: #667eea;
+        background: #f0f4ff;
+    }
+
+    .candidate-vote-option input[type="radio"] {
+        margin-right: 15px;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+
+    .candidate-vote-info {
+        flex: 1;
+    }
+
+    .candidate-vote-name {
+        font-weight: 600;
+        color: #333;
+    }
+
+    .candidate-vote-party {
+        font-size: 13px;
+        color: #666;
+        margin-top: 3px;
+    }
+
+    /* Estilos para tarjetas de candidatos en votación */
+    .position-voting-section {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .position-voting-title {
+        color: #667eea;
+        font-weight: 700;
+        font-size: 20px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #667eea;
+    }
+
+    .candidates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .candidate-card {
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .candidate-card:hover {
+        border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        transform: translateY(-4px);
+    }
+
+    .candidate-card.selected {
+        background: linear-gradient(135deg, #f0f4ff 0%, #f8f9ff 100%);
+        border-color: #667eea;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .candidate-card-header {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .candidate-checkbox {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+    }
+
+    .candidate-photo-container {
+        width: 100%;
+        height: 180px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .candidate-photo {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .candidate-photo-placeholder {
+        font-size: 48px;
+        color: #bbb;
+    }
+
+    .candidate-name {
+        font-weight: 700;
+        font-size: 16px;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .candidate-party {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 10px;
+        font-weight: 500;
+    }
+
+    .candidate-description {
+        font-size: 12px;
+        color: #999;
+        line-height: 1.4;
+    }
+
+    .alert-dismissible .btn-close {
+        padding: 0;
+    }
+
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .modal-header .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #5568d3 0%, #6a4291 100%);
+        border: none;
+    }
+
+    .table-responsive {
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .table {
+        margin-bottom: 0;
+    }
+
+    .table thead {
+        background: #f8f9fa;
+        border-bottom: 2px solid #667eea;
+    }
+
+    .table thead th {
+        color: #667eea;
+        font-weight: 600;
+        border: none;
+        padding: 15px;
+    }
+
+    .table tbody td {
+        padding: 15px;
+        border: none;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .table tbody tr:hover {
+        background: #f8f9ff;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        color: #ddd;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <!-- Encabezado -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h1 class="mb-1">
-                        <i class="fas fa-tachometer-alt text-primary me-2"></i>Panel de Control
-                    </h1>
-                    <p class="text-muted">Gestiona participantes, posiciones y candidatos</p>
-                </div>
-                <div>
-                    <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addParticipantModal">
-                        <i class="fas fa-user-plus me-2"></i>Nuevo Participante
-                    </button>
-                </div>
-            </div>
+    <!-- Statistics Cards -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <h5>Total Participantes</h5>
+            <div class="number" id="totalParticipants">0</div>
+            <div class="label">Registrados</div>
+        </div>
+        <div class="stat-card">
+            <h5>Han Votado</h5>
+            <div class="number" id="votedParticipants">0</div>
+            <div class="label">Participación</div>
+        </div>
+        <div class="stat-card">
+            <h5>Pendiente de Votar</h5>
+            <div class="number" id="pendingVoters">0</div>
+            <div class="label">Sin participar</div>
+        </div>
+        <div class="stat-card">
+            <h5>Tasa de Participación</h5>
+            <div class="number" id="participationRate">0%</div>
+            <div class="label">Del total</div>
         </div>
     </div>
-    
-    <!-- Tarjetas de estadísticas -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100 stat-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted small mb-1">Total de Participantes</p>
-                            <h2 class="mb-0" id="total-participants">0</h2>
-                        </div>
-                        <div class="stat-icon bg-primary text-white rounded-circle d-flex align-items-center justify-content-center">
-                            <i class="fas fa-users fa-lg"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100 stat-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted small mb-1">Han Votado</p>
-                            <h2 class="mb-0" id="voted-participants">0</h2>
-                        </div>
-                        <div class="stat-icon bg-success text-white rounded-circle d-flex align-items-center justify-content-center">
-                            <i class="fas fa-check-circle fa-lg"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100 stat-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted small mb-1">Pendientes</p>
-                            <h2 class="mb-0" id="pending-participants">0</h2>
-                        </div>
-                        <div class="stat-icon bg-warning text-white rounded-circle d-flex align-items-center justify-content-center">
-                            <i class="fas fa-hourglass-half fa-lg"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm h-100 stat-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted small mb-1">Tasa Participación</p>
-                            <h2 class="mb-0" id="participation-rate">0%</h2>
-                        </div>
-                        <div class="stat-icon bg-info text-white rounded-circle d-flex align-items-center justify-content-center">
-                            <i class="fas fa-percentage fa-lg"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Pestañas -->
-    <ul class="nav nav-tabs mb-4" role="tablist">
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="participants-tab" data-bs-toggle="tab" data-bs-target="#participants-pane" type="button" role="tab">
-                <i class="fas fa-users me-2"></i>Participantes
+            <button class="nav-link active" id="admin-tab" data-bs-toggle="tab" data-bs-target="#admin-content" type="button" role="tab" aria-controls="admin-content" aria-selected="true">
+                <i class="fas fa-cogs"></i> Administración
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="positions-tab" data-bs-toggle="tab" data-bs-target="#positions-pane" type="button" role="tab">
-                <i class="fas fa-list me-2"></i>Posiciones
+            <button class="nav-link" id="registro-tab" data-bs-toggle="tab" data-bs-target="#registro-content" type="button" role="tab" aria-controls="registro-content" aria-selected="false">
+                <i class="fas fa-user-plus"></i> Registro
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="candidates-tab" data-bs-toggle="tab" data-bs-target="#candidates-pane" type="button" role="tab">
-                <i class="fas fa-user-tie me-2"></i>Candidatos
+            <button class="nav-link" id="votacion-tab" data-bs-toggle="tab" data-bs-target="#votacion-content" type="button" role="tab" aria-controls="votacion-content" aria-selected="false">
+                <i class="fas fa-poll"></i> Votación
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="resultados-tab" data-bs-toggle="tab" data-bs-target="#resultados-content" type="button" role="tab" aria-controls="resultados-content" aria-selected="false">
+                <i class="fas fa-chart-bar"></i> Resultados
             </button>
         </li>
     </ul>
-    
+
+    <!-- Tab Content -->
     <div class="tab-content">
-        <!-- Pestaña Participantes -->
-        <div class="tab-pane fade show active" id="participants-pane" role="tabpanel">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-light border-bottom">
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <input type="text" class="form-control" id="participants-search" placeholder="Buscar por email, nombre...">
-                        </div>
-                        <div class="col-md-6 text-end">
-                            <button class="btn btn-sm btn-outline-primary me-2" data-bs-toggle="modal" data-bs-target="#bulkUploadModal">
-                                <i class="fas fa-upload me-1"></i>Cargar CSV
-                            </button>
-                            <button class="btn btn-sm btn-outline-success" id="send-invitations-btn">
-                                <i class="fas fa-envelope me-1"></i>Enviar Invitaciones
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div id="participants-list" style="max-height: 500px; overflow-y: auto;">
-                        <!-- Será llenado por JavaScript -->
-                    </div>
-                </div>
+        <!-- ADMINISTRACIÓN TAB -->
+        <div class="tab-pane fade show active" id="admin-content" role="tabpanel" aria-labelledby="admin-tab">
+            <div class="alert alert-warning" style="margin-bottom: 20px;">
+                <i class="fas fa-shield-alt"></i> <strong>Área Administrativa</strong>
+                <p class="mb-0" style="font-size: 13px;">Esta sección está restringida solo para administradores autorizados.</p>
             </div>
-        </div>
-        
-        <!-- Pestaña Posiciones -->
-        <div class="tab-pane fade" id="positions-pane" role="tabpanel">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-light border-bottom d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Cargos/Posiciones</h5>
-                    <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addPositionModal">
-                        <i class="fas fa-plus me-1"></i>Nueva Posición
+            
+            <!-- Sub-navigation for Admin -->
+            <ul class="nav nav-pills mb-3" role="tablist" style="gap: 10px;">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="participants-subtab" data-bs-toggle="tab" data-bs-target="#participants-panel" type="button" role="tab">
+                        <i class="fas fa-users"></i> Participantes
                     </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="positions-subtab" data-bs-toggle="tab" data-bs-target="#positions-panel" type="button" role="tab">
+                        <i class="fas fa-list"></i> Posiciones
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="candidates-subtab" data-bs-toggle="tab" data-bs-target="#candidates-panel" type="button" role="tab">
+                        <i class="fas fa-star"></i> Candidatos
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Participants Panel -->
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="participants-panel" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4>Gestión de Participantes</h4>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#participantModal">
+                            <i class="fas fa-plus"></i> Nuevo Participante
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" id="participantsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Email</th>
+                                    <th>Nombre</th>
+                                    <th>Teléfono</th>
+                                    <th>Registrado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="participantsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div id="positions-list">
-                        <!-- Será llenado por JavaScript -->
+
+                <!-- Positions Panel -->
+                <div class="tab-pane fade" id="positions-panel" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4>Gestión de Posiciones</h4>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#positionModal">
+                            <i class="fas fa-plus"></i> Nueva Posición
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" id="positionsTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Descripción</th>
+                                    <th>Orden</th>
+                                    <th>Activa</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="positionsTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Candidates Panel -->
+                <div class="tab-pane fade" id="candidates-panel" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4>Gestión de Candidatos</h4>
+                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#candidateModal">
+                            <i class="fas fa-plus"></i> Nuevo Candidato
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table" id="candidatesTable">
+                            <thead>
+                                <tr>
+                                    <th>Foto</th>
+                                    <th>Nombre</th>
+                                    <th>Posición</th>
+                                    <th>Partido</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="candidatesTableBody">
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Pestaña Candidatos -->
-        <div class="tab-pane fade" id="candidates-pane" role="tabpanel">
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-light border-bottom">
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <select class="form-select" id="position-filter">
-                                <option value="">Selecciona una posición...</option>
-                            </select>
+
+        <!-- REGISTRO TAB -->
+        <div class="tab-pane fade" id="registro-content" role="tabpanel" aria-labelledby="registro-tab">
+            <div class="login-section">
+                <h3 class="mb-4 text-center">
+                    <i class="fas fa-user-plus"></i> Registro de Participante
+                </h3>
+
+                <div id="registroAlert"></div>
+
+                <form id="registrationForm">
+                    <div class="mb-3">
+                        <label for="regEmail" class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="regEmail" name="email" required>
+                        <small id="emailError" class="text-danger" style="display: none;"></small>
+                        <small id="emailValid" class="text-success" style="display: none;">
+                            <i class="fas fa-check-circle"></i> Email disponible
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="regPassword" class="form-label">Contraseña <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="regPassword" name="password" required>
+                        <div class="password-requirements">
+                            <strong>Requisitos:</strong>
+                            <div class="requirement unmet" id="req-length">
+                                <i class="fas fa-circle"></i> Al menos 8 caracteres
+                            </div>
+                            <div class="requirement unmet" id="req-upper">
+                                <i class="fas fa-circle"></i> Una mayúscula
+                            </div>
+                            <div class="requirement unmet" id="req-lower">
+                                <i class="fas fa-circle"></i> Una minúscula
+                            </div>
+                            <div class="requirement unmet" id="req-number">
+                                <i class="fas fa-circle"></i> Un número
+                            </div>
                         </div>
-                        <div class="col-md-6 text-end">
-                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addCandidateModal">
-                                <i class="fas fa-plus me-1"></i>Nuevo Candidato
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="regConfirm" class="form-label">Confirmar Contraseña <span class="text-danger">*</span></label>
+                        <input type="password" class="form-control" id="regConfirm" name="confirm" required>
+                        <small id="passwordMatchError" class="text-danger" style="display: none;"></small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="regFirstName" class="form-label">Nombre <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="regFirstName" name="first_name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="regLastName" class="form-label">Apellido <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="regLastName" name="last_name" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="regPhone" class="form-label">Teléfono</label>
+                        <input type="tel" class="form-control" id="regPhone" name="phone">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-user-check"></i> Registrarse
+                    </button>
+                </form>
+
+                <hr class="my-4">
+
+                <p class="text-center text-muted">
+                    <small>¿Ya tienes cuenta? <a href="#" onclick="showLoginModal()" class="text-decoration-none">Inicia sesión</a></small>
+                </p>
+            </div>
+        </div>
+
+        <!-- VOTACIÓN TAB -->
+        <div class="tab-pane fade" id="votacion-content" role="tabpanel" aria-labelledby="votacion-tab">
+            <div id="votingContent">
+                <!-- Login Required Message -->
+                <div id="votingLoginRequired" class="mt-4">
+                    <div class="alert alert-info">
+                        <i class="fas fa-lock"></i> <strong>Acceso Restringido</strong>
+                        <p class="mt-2 mb-0">Por favor, <a href="#" onclick="showParticipantLogin()" class="alert-link font-weight-bold">inicia sesión</a> para acceder al área de votación.</p>
+                    </div>
+
+                    <!-- Example Candidates Preview -->
+                    <div class="mt-4">
+                        <h5 class="text-center text-muted mb-4">
+                            <i class="fas fa-info-circle"></i> Candidatos Disponibles (Vista Previa)
+                        </h5>
+                        <div id="exampleCandidatesContainer" class="row">
+                            <!-- Los candidatos de ejemplo se cargarán aquí -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voting Survey Container (Visible after login) -->
+                <div id="votingSurveys" style="display: none;">
+                    <!-- Title Section -->
+                    <div class="row mb-4 mt-4">
+                        <div class="col-12">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <h3 class="mb-0">
+                                        <i class="fas fa-poll-h"></i> Selecciona tus candidatos
+                                    </h3>
+                                    <p class="text-muted mt-2 mb-0">
+                                        <small>Elige un candidato para cada posición disponible</small>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Candidates Grid -->
+                    <div id="surveysContainer" class="row">
+                        <!-- Los datos se cargarán aquí por JavaScript -->
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="row mt-5 mb-4">
+                        <div class="col-12">
+                            <button type="button" class="btn btn-success btn-lg w-100" id="submitVotesBtn" style="display: none;">
+                                <i class="fas fa-check-circle"></i> Enviar mis Votos
                             </button>
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div id="candidates-list">
-                        <!-- Será llenado por JavaScript -->
+            </div>
+        </div>
+
+        <!-- RESULTADOS TAB -->
+        <div class="tab-pane fade" id="resultados-content" role="tabpanel" aria-labelledby="resultados-tab">
+            <h4 class="mb-4">
+                <i class="fas fa-chart-bar"></i> Resultados de Votación
+            </h4>
+
+            <div id="resultsStats" class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h6 class="card-title">Total Votos</h6>
+                            <h3 id="totalVotes">0</h3>
+                        </div>
                     </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h6 class="card-title">Participantes Votantes</h6>
+                            <h3 id="uniqueVoters">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h6 class="card-title">Posiciones</h6>
+                            <h3 id="totalPositions">0</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h6 class="card-title">Candidatos</h6>
+                            <h3 id="totalCandidates">0</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="resultsContainer" class="results-grid">
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <p>Cargando resultados...</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modales -->
-{% include 'modals/participant_modal.html' %}
-{% include 'modals/position_modal.html' %}
-{% include 'modals/candidate_modal.html' %}
-{% include 'modals/bulk_upload_modal.html' %}
+<!-- Modals for Admin -->
+{% include "modals/participant_modal.html" %}
+{% include "modals/position_modal.html" %}
+{% include "modals/candidate_modal.html" %}
+{% include "modals/bulk_upload_modal.html" %}
+
+<!-- Participant Login Modal -->
+<div class="modal fade" id="participantLoginModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-sign-in-alt"></i> Ingreso de Participante
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="loginAlert"></div>
+                <form id="participantLoginForm" onsubmit="event.preventDefault(); submitParticipantLogin();">
+                    <div class="mb-3">
+                        <label for="loginEmail" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="loginEmail" name="email" required placeholder="ejemplo@correo.com">
+                    </div>
+                    <div class="mb-3">
+                        <label for="loginPassword" class="form-label">Contraseña</label>
+                        <input type="password" class="form-control" id="loginPassword" name="password" required placeholder="Tu contraseña">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-sign-in-alt"></i> Ingresar
+                    </button>
+                </form>
+                <hr>
+                <p class="text-center text-muted mb-0">
+                    <small>¿No tienes cuenta? <a href="#" onclick="closeLoginAndGoToRegistry()" class="text-decoration-none font-weight-bold">Regístrate aquí</a></small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vote Confirmation Modal -->
+<div class="modal fade" id="voteConfirmModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-check-circle"></i> Confirmar Votos
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas enviar tus votos? Esta acción no puede deshacerse.</p>
+                <div id="voteConfirmDetails"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmVotesBtn">
+                    <i class="fas fa-check"></i> Confirmar Votos
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+<script>
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if admin is logged in
+        if (getToken()) {
+            loadAdminDashboard();
+            updateStatistics();
+        }
+
+        // Event listeners for tabs
+        document.getElementById('registro-tab').addEventListener('click', function() {
+            initializeRegistrationForm();
+        });
+
+        document.getElementById('votacion-tab').addEventListener('click', function() {
+            loadVotingTab();
+        });
+
+        document.getElementById('resultados-tab').addEventListener('click', function() {
+            loadResultsTab();
+        });
+    });
+
+    function getToken() {
+        return localStorage.getItem('adminToken');
+    }
+
+    function loadAdminDashboard() {
+        loadParticipants();
+        loadPositions();
+        loadCandidates();
+    }
+
+    function updateStatistics() {
+        fetch('/api/participants/stats', {
+            headers: {
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('totalParticipants').textContent = data.total;
+            document.getElementById('votedParticipants').textContent = data.voted;
+            document.getElementById('pendingVoters').textContent = data.pending;
+            document.getElementById('participationRate').textContent = 
+                (data.total > 0 ? Math.round((data.voted / data.total) * 100) : 0) + '%';
+        });
+    }
+
+    function showParticipantLogin() {
+        new bootstrap.Modal(document.getElementById('participantLoginModal')).show();
+    }
+
+    function showLoginModal() {
+        new bootstrap.Modal(document.getElementById('participantLoginModal')).show();
+    }
+</script>
+
+<!-- Nuevo archivo de votación -->
+<script src="{{ url_for('static', filename='js/voting.js') }}"></script>
+
 {% endblock %}

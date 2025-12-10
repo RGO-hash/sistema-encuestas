@@ -30,7 +30,13 @@ def get_positions():
 @jwt_required()
 def create_position():
     """Crear nueva posición"""
-    data = request.get_json()
+    try:
+        data = request.get_json()
+    except Exception as e:
+        return jsonify({'error': f'JSON inválido: {str(e)}'}), 400
+    
+    if not data:
+        return jsonify({'error': 'Datos vacíos'}), 400
     
     if not data.get('name'):
         return jsonify({'error': 'El nombre es requerido'}), 400
@@ -39,30 +45,35 @@ def create_position():
     if Position.query.filter_by(name=data['name']).first():
         return jsonify({'error': 'La posición ya existe'}), 409
     
-    position = Position(
-        name=data['name'].strip(),
-        description=data.get('description', '').strip(),
-        order=data.get('order', 0)
-    )
-    
-    db.session.add(position)
-    db.session.commit()
-    
-    # Log de auditoría
-    admin_id = get_jwt_identity()
-    AuditService.log_action(
-        action='CREATE',
-        entity_type='POSITION',
-        entity_id=position.id,
-        description=f"Posición '{position.name}' creada",
-        admin_id=admin_id,
-        ip_address=request.remote_addr
-    )
-    
-    return jsonify({
-        'message': 'Posición creada exitosamente',
-        'position': position.to_dict()
-    }), 201
+    try:
+        position = Position(
+            name=data['name'].strip(),
+            description=data.get('description', '').strip(),
+            order=int(data.get('order', 0)),
+            is_active=data.get('is_active', True)
+        )
+        
+        db.session.add(position)
+        db.session.commit()
+        
+        # Log de auditoría
+        admin_id = int(get_jwt_identity())
+        AuditService.log_action(
+            action='CREATE',
+            entity_type='POSITION',
+            entity_id=position.id,
+            description=f"Posición '{position.name}' creada",
+            admin_id=admin_id,
+            ip_address=request.remote_addr
+        )
+        
+        return jsonify({
+            'message': 'Posición creada exitosamente',
+            'position': position.to_dict()
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Error al crear posición: {str(e)}'}), 500
 
 
 @survey_bp.route('/positions/<int:position_id>', methods=['PUT'])

@@ -39,8 +39,8 @@ def login():
         ip_address=request.remote_addr
     )
     
-    # Crear token JWT
-    access_token = create_access_token(identity=admin.id)
+    # Crear token JWT con identity como string
+    access_token = create_access_token(identity=str(admin.id))
     
     return jsonify({
         'access_token': access_token,
@@ -92,7 +92,7 @@ def register():
 @jwt_required()
 def verify_token():
     """Verificar token JWT válido"""
-    admin_id = get_jwt_identity()
+    admin_id = int(get_jwt_identity())
     admin = AdminUser.query.get(admin_id)
     
     if not admin or not admin.is_active:
@@ -240,8 +240,8 @@ def participant_login():
     if not participant_user.verify_password(data['password']):
         return jsonify({'error': 'Credenciales inválidas'}), 401
     
-    # Crear token JWT
-    access_token = create_access_token(identity=participant_user.id)
+    # Crear token JWT con identity como string
+    access_token = create_access_token(identity=str(participant_user.id))
     
     return jsonify({
         'access_token': access_token,

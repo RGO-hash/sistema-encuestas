@@ -6,32 +6,129 @@ class AuthManager {
     constructor() {
         this.tokenKey = 'auth_token';
         this.userKey = 'auth_user';
+        // Almacenamiento en memoria como principal
+        this.memoryToken = null;
+        this.memoryUser = null;
+        this.useMemoryOnly = false;
+    }
+    
+    _setInStorage(key, value) {
+        // Intentar primero sessionStorage (menos restrictivo)
+        try {
+            sessionStorage.setItem(key, value);
+            return true;
+        } catch (e) {
+            console.warn('sessionStorage no disponible:', e.message);
+        }
+        
+        // Fallback a localStorage
+        try {
+            localStorage.setItem(key, value);
+            return true;
+        } catch (e) {
+            console.warn('localStorage no disponible:', e.message);
+        }
+        
+        // Usar solo memoria
+        this.useMemoryOnly = true;
+        return false;
+    }
+    
+    _getFromStorage(key) {
+        // Intentar sessionStorage primero
+        try {
+            const value = sessionStorage.getItem(key);
+            if (value) return value;
+        } catch (e) {
+            console.warn('sessionStorage no disponible:', e.message);
+        }
+        
+        // Intentar localStorage
+        try {
+            const value = localStorage.getItem(key);
+            if (value) return value;
+        } catch (e) {
+            console.warn('localStorage no disponible:', e.message);
+        }
+        
+        return null;
+    }
+    
+    _removeFromStorage(key) {
+        try {
+            sessionStorage.removeItem(key);
+        } catch (e) {}
+        
+        try {
+            localStorage.removeItem(key);
+        } catch (e) {}
     }
     
     setToken(token) {
-        localStorage.setItem(this.tokenKey, token);
+        console.log('Guardando token...');
+        this.memoryToken = token;
+        this._setInStorage(this.tokenKey, token);
+        console.log('Token guardado:', !!token);
     }
     
     getToken() {
-        return localStorage.getItem(this.tokenKey);
+        // Verificar memoria primero
+        if (this.memoryToken) {
+            return this.memoryToken;
+        }
+        
+        // Buscar en storage
+        const storedToken = this._getFromStorage(this.tokenKey);
+        if (storedToken) {
+            this.memoryToken = storedToken;
+            return storedToken;
+        }
+        
+        return null;
     }
     
     setUser(user) {
-        localStorage.setItem(this.userKey, JSON.stringify(user));
+        console.log('Guardando usuario...');
+        this.memoryUser = user;
+        try {
+            this._setInStorage(this.userKey, JSON.stringify(user));
+        } catch (e) {
+            console.error('Error guardando usuario:', e);
+        }
+        console.log('Usuario guardado:', !!user);
     }
     
     getUser() {
-        const user = localStorage.getItem(this.userKey);
-        return user ? JSON.parse(user) : null;
+        // Verificar memoria primero
+        if (this.memoryUser) {
+            return this.memoryUser;
+        }
+        
+        // Buscar en storage
+        try {
+            const storedUser = this._getFromStorage(this.userKey);
+            if (storedUser) {
+                this.memoryUser = JSON.parse(storedUser);
+                return this.memoryUser;
+            }
+        } catch (e) {
+            console.error('Error parseando usuario:', e);
+        }
+        
+        return null;
     }
     
     isAuthenticated() {
-        return this.getToken() !== null;
+        const token = this.getToken();
+        return token !== null && token !== undefined && token.length > 0;
     }
     
     logout() {
-        localStorage.removeItem(this.tokenKey);
-        localStorage.removeItem(this.userKey);
+        console.log('Desconectando usuario...');
+        this.memoryToken = null;
+        this.memoryUser = null;
+        this._removeFromStorage(this.tokenKey);
+        this._removeFromStorage(this.userKey);
         window.location.href = '/';
     }
 }
@@ -55,6 +152,9 @@ class ApiClient {
         const token = authManager.getToken();
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
+            console.debug('Token añadido al header:', token.substring(0, 20) + '...');
+        } else {
+            console.debug('Sin token en el header');
         }
         
         return headers;
@@ -62,6 +162,8 @@ class ApiClient {
     
     async request(method, endpoint, data = null) {
         try {
+            console.log(`[${method}] ${endpoint}`);
+            
             const options = {
                 method: method,
                 headers: this.getHeaders()
@@ -72,9 +174,12 @@ class ApiClient {
             }
             
             const response = await fetch(`${this.baseUrl}${endpoint}`, options);
+            console.log(`Response: ${response.status}`);
             
-            // Manejar token expirado
+            // Manejar 401 - No autorizado
             if (response.status === 401) {
+                console.warn('401 No autorizado, desconectando...');
+                showNotification('Tu sesión ha expirado. Por favor inicia sesión de nuevo.', 'warning');
                 authManager.logout();
                 return null;
             }
@@ -86,20 +191,22 @@ class ApiClient {
             if (contentType && contentType.includes('application/json')) {
                 result = await response.json();
             } else {
-                // Si no es JSON, es probablemente un error del servidor (HTML)
+                // Si no es JSON, es probablemente un error del servidor
                 const text = await response.text();
-                console.error('Server response is not JSON:', text.substring(0, 200));
-                throw new Error('Error del servidor. Por favor intenta de nuevo.');
+                console.error('Response no es JSON:', text.substring(0, 500));
+                throw new Error(`Error del servidor (${response.status})`);
             }
             
             if (!response.ok) {
-                throw new Error(result.error || 'Error en la solicitud');
+                console.error(`Error ${response.status}:`, result);
+                const errorMsg = result.error || `Error ${response.status}`;
+                throw new Error(errorMsg);
             }
             
             return result;
             
         } catch (error) {
-            console.error('Error:', error);
+            console.error('API Error:', error.message);
             showNotification(error.message, 'danger');
             return null;
         }
