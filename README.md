@@ -434,6 +434,3 @@ R: Sí, solo se registra el tipo de voto, no datos personales
 
 Para problemas, revisa los logs en `/logs/app.log`
 
----
-
-**¡Disfruta administrando tus encuestas de forma segura y profesional!** 🎉
