@@ -296,9 +296,8 @@ def send_invitations():
 
 
 @participants_bp.route('/stats', methods=['GET'])
-@jwt_required()
 def get_stats():
-    """Obtener estadísticas de participantes"""
+    """Obtener estadísticas de participantes - Público"""
     current_app.logger.info('=== LLAMADA A /api/participants/stats ===')
     
     total = Participant.query.count()

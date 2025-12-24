@@ -881,29 +881,55 @@
         const token = getToken();
         console.log('Actualizando estadísticas con token:', token ? 'Presente' : 'Ausente');
         
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        
+        if (token) {
+            headers['Authorization'] = 'Bearer ' + token;
+        }
+        
         fetch('/api/participants/stats', {
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-            }
+            method: 'GET',
+            headers: headers
         })
         .then(r => {
             console.log('Response status stats:', r.status);
+            if (r.status === 401) {
+                console.warn('No autorizado, intentando sin token...');
+                return fetch('/api/participants/stats').then(r => r.json());
+            }
             if (!r.ok) {
                 throw new Error(`HTTP error! status: ${r.status}`);
             }
             return r.json();
         })
         .then(data => {
-            console.log('Stats data:', data);
-            document.getElementById('totalParticipants').textContent = data.total;
-            document.getElementById('votedParticipants').textContent = data.voted;
-            document.getElementById('pendingVoters').textContent = data.pending;
-            document.getElementById('participationRate').textContent = 
-                (data.total > 0 ? Math.round((data.voted / data.total) * 100) : 0) + '%';
+            console.log('Stats data received:', data);
+            if (data) {
+                const totalEl = document.getElementById('totalParticipants');
+                const votedEl = document.getElementById('votedParticipants');
+                const pendingEl = document.getElementById('pendingVoters');
+                const rateEl = document.getElementById('participationRate');
+                
+                if (totalEl) totalEl.textContent = data.total || 0;
+                if (votedEl) votedEl.textContent = data.voted || 0;
+                if (pendingEl) pendingEl.textContent = data.pending || 0;
+                if (rateEl) {
+                    const rate = data.participation_rate || 0;
+                    rateEl.textContent = (Math.round(rate * 10) / 10) + '%';
+                }
+                
+                console.log('Estadísticas actualizadas:', {
+                    total: data.total,
+                    voted: data.voted,
+                    pending: data.pending,
+                    rate: data.participation_rate
+                });
+            }
         })
         .catch(error => {
-            console.error('Error cargando estadísticas:', error);
+            console.error('Error actualizando estadísticas:', error);
         });
     }
 
